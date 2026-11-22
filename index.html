@@ -12,16 +12,6 @@
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            nook: {
-              bg: '#FAF8F5',
-              card: '#FFFFFF',
-              dark: '#1C1917',
-              muted: '#78716C',
-              terracotta: '#C27856',
-              sand: '#E7E5E4'
-            }
-          },
           fontFamily: {
             serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
             sans: ['"Pretendard"', '-apple-system', 'sans-serif'],
@@ -37,7 +27,7 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body class="bg-[#FAF8F5] text-stone-900 selection:bg-stone-800 selection:text-white">
+<body class="selection:bg-stone-800 selection:text-white">
 
   <!-- ================= TOP NOTICE BAR ================= -->
   <div class="bg-stone-900 text-stone-300 text-xs py-2 px-4 text-center tracking-wide font-light flex items-center justify-center gap-2">
@@ -47,7 +37,7 @@
   </div>
 
   <!-- ================= STICKY HEADER ================= -->
-  <header class="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-stone-200/80 transition-all duration-300">
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-stone-200/80 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       
       <!-- 모바일 햄버거 버튼 -->
@@ -57,7 +47,7 @@
 
       <!-- 브랜드 로고 -->
       <a href="#" class="flex flex-col items-center group">
-        <span class="font-serif text-2xl sm:text-3xl tracking-[0.25em] font-normal uppercase text-stone-900 group-hover:text-stone-700 transition-colors">
+        <span class="brand-logo-text font-serif text-2xl sm:text-3xl tracking-[0.25em] font-normal uppercase text-stone-900 group-hover:text-stone-700 transition-colors">
           ATELIER NOOK
         </span>
         <span class="text-[9px] tracking-[0.3em] uppercase text-stone-500 font-sans -mt-0.5">
@@ -101,9 +91,9 @@
     </div>
 
     <!-- 모바일 드롭다운 메뉴 -->
-    <div id="mobile-menu" class="hidden md:hidden bg-[#FAF8F5] border-b border-stone-200 px-6 py-4 space-y-3 text-sm font-medium">
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-stone-200 px-6 py-4 space-y-3 text-sm font-medium">
       <a href="#collection" onclick="toggleMobileMenu()" class="block py-1 text-stone-800">모든 컬렉션 보기</a>
-      <a href="#collection" onclick="setCategory('ceramics'); toggleMobileMenu()" class="block py-1 text-stone-600">도자기 & 오브제</a>
+      <a href="#collection" onclick="setCategory('ceramics'); toggleMobileMenu()" class="block py-1 text-stone-600">실 YARN</a>
       <a href="#collection" onclick="setCategory('scent'); toggleMobileMenu()" class="block py-1 text-stone-600">향 & 캔들</a>
       <a href="#collection" onclick="setCategory('lighting'); toggleMobileMenu()" class="block py-1 text-stone-600">조명 & 라이팅</a>
       <a href="#collection" onclick="setCategory('fabric'); toggleMobileMenu()" class="block py-1 text-stone-600">패브릭 & 베딩</a>
@@ -112,8 +102,8 @@
   </header>
 
   <!-- ================= HERO SECTION ================= -->
-  <section class="relative min-h-[580px] sm:min-h-[680px] flex items-center justify-center overflow-hidden">
-    <!-- 배경 이미지 및 그라데이션 오버레이 -->
+  <!-- 모바일(768px 미만)에서는 숨김 → 셀렉션 컬렉션이 첫 화면 -->
+  <section class="relative min-h-[560px] sm:min-h-[660px] hidden md:flex items-center justify-center overflow-hidden">
     <div class="absolute inset-0 z-0">
       <img 
         src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1920&auto=format&fit=crop" 
@@ -127,7 +117,7 @@
       <p class="text-xs sm:text-sm font-light tracking-[0.3em] uppercase mb-4 text-stone-200">
         Curated Objects for Everyday Sanctuary
       </p>
-      <h1 class="font-serif text-4xl sm:text-6xl md:text-7xl font-normal leading-tight sm:leading-tight mb-6 hero-text-shadow">
+      <h1 id="hero-title-main" class="font-serif text-4xl sm:text-6xl md:text-7xl font-normal leading-tight sm:leading-tight mb-6 hero-text-shadow">
         Form follows soul.<br />
         <span class="italic text-stone-100">공간의 온도를 바꾸는 온전한 시선</span>
       </h1>
@@ -153,31 +143,31 @@
   </section>
 
   <!-- ================= BRAND HIGHLIGHTS ================= -->
-  <section class="border-y border-stone-200 bg-white py-8">
+  <section class="hidden md:block border-y border-stone-200/70 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-stone-200">
         
         <div class="pt-4 md:pt-0 px-4">
-          <div class="w-10 h-10 mx-auto mb-3 text-stone-800 flex items-center justify-center rounded-full bg-stone-100">
+          <div class="w-10 h-10 mx-auto mb-3 flex items-center justify-center rounded-full bg-stone-200/60 text-stone-800">
             <i data-lucide="sparkles" class="w-5 h-5"></i>
           </div>
-          <h3 class="text-sm font-semibold tracking-wide uppercase text-stone-900 mb-1">Timeless Design</h3>
+          <h3 class="text-sm font-semibold tracking-wide uppercase mb-1">Timeless Design</h3>
           <p class="text-xs text-stone-500 leading-relaxed">유행을 타지 않고 오랜 시간 공간에 자연스레 스며드는 디자인</p>
         </div>
 
         <div class="pt-4 md:pt-0 px-4">
-          <div class="w-10 h-10 mx-auto mb-3 text-stone-800 flex items-center justify-center rounded-full bg-stone-100">
+          <div class="w-10 h-10 mx-auto mb-3 flex items-center justify-center rounded-full bg-stone-200/60 text-stone-800">
             <i data-lucide="leaf" class="w-5 h-5"></i>
           </div>
-          <h3 class="text-sm font-semibold tracking-wide uppercase text-stone-900 mb-1">Natural Materials</h3>
+          <h3 class="text-sm font-semibold tracking-wide uppercase mb-1">Natural Materials</h3>
           <p class="text-xs text-stone-500 leading-relaxed">자연 흙, 오가닉 린넨, 단단한 원목과 황동 등 솔직한 원재료</p>
         </div>
 
         <div class="pt-4 md:pt-0 px-4">
-          <div class="w-10 h-10 mx-auto mb-3 text-stone-800 flex items-center justify-center rounded-full bg-stone-100">
+          <div class="w-10 h-10 mx-auto mb-3 flex items-center justify-center rounded-full bg-stone-200/60 text-stone-800">
             <i data-lucide="shield-check" class="w-5 h-5"></i>
           </div>
-          <h3 class="text-sm font-semibold tracking-wide uppercase text-stone-900 mb-1">Careful Craft</h3>
+          <h3 class="text-sm font-semibold tracking-wide uppercase mb-1">Careful Craft</h3>
           <p class="text-xs text-stone-500 leading-relaxed">기계 생산을 지양하고 소량 한정 공정으로 빚어내는 완성도</p>
         </div>
 
@@ -186,12 +176,11 @@
   </section>
 
   <!-- ================= PRODUCTS COLLECTION ================= -->
-  <section id="collection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+  <section id="collection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 sm:pb-24 md:pt-24">
     
-    <!-- 섹션 헤더 -->
     <div class="text-center max-w-2xl mx-auto mb-10">
       <span class="text-xs font-semibold tracking-[0.2em] uppercase text-stone-500">Curated Objects</span>
-      <h2 class="font-serif text-3xl sm:text-4xl text-stone-900 mt-2 mb-3">셀렉션 컬렉션</h2>
+      <h2 class="font-serif text-3xl sm:text-4xl mt-2 mb-3">셀렉션 컬렉션</h2>
       <p class="text-xs sm:text-sm text-stone-500 leading-relaxed">
         당신의 공간에 잔잔한 영감을 더해줄 아틀리에 눅의 오브제를 만나보세요.
       </p>
@@ -199,34 +188,29 @@
 
     <!-- 필터 & 검색 툴바 -->
     <div class="space-y-4 mb-8">
-      
-      <!-- 카테고리 탭 버튼 -->
       <div id="category-pills" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none justify-start md:justify-center">
         <!-- JS로 동적 렌더링 -->
       </div>
 
-      <!-- 보조 컨트롤 (검색창 + 개수 카운트 + 정렬 셀렉트) -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-stone-200">
-        <!-- 검색 인풋 -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-stone-200/70">
         <div class="relative flex-1 max-w-xs">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"></i>
           <input 
             type="text" 
             id="search-input" 
             placeholder="상품명, 카테고리 검색..." 
-            class="w-full pl-9 pr-4 py-2 bg-white border border-stone-200 rounded-lg text-xs placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-900 focus:border-stone-900"
+            class="w-full pl-9 pr-4 py-2 bg-white border border-stone-300 rounded-lg text-xs placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-900"
           />
         </div>
 
         <div class="flex items-center justify-between sm:justify-end gap-4">
           <span id="product-count" class="text-xs text-stone-500 font-medium">8개의 오브제</span>
           
-          <!-- 정렬 드롭다운 -->
           <div class="flex items-center gap-2">
             <label for="sort-select" class="text-xs text-stone-500">정렬:</label>
             <select 
               id="sort-select" 
-              class="bg-white border border-stone-200 rounded-lg text-xs py-2 px-3 focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-700"
+              class="bg-white border border-stone-300 rounded-lg text-xs py-2 px-3 focus:outline-none focus:ring-1 focus:ring-stone-900 text-stone-700"
             >
               <option value="popular">추천/인기순</option>
               <option value="new">신상품순</option>
@@ -235,9 +219,7 @@
             </select>
           </div>
         </div>
-
       </div>
-
     </div>
 
     <!-- 상품 그리드 -->
@@ -248,11 +230,10 @@
   </section>
 
   <!-- ================= EDITORIAL / STORY SECTION ================= -->
-  <section id="editorial" class="bg-[#F4EFEA] py-20 border-y border-stone-200">
+  <section id="editorial" class="py-20 border-y border-stone-200/70 bg-stone-100/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         
-        <!-- 이미지 컬렉션 -->
         <div class="relative">
           <div class="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
             <img 
@@ -261,7 +242,7 @@
               class="w-full h-full object-cover"
             />
           </div>
-          <div class="absolute -bottom-6 -right-6 hidden sm:block w-48 aspect-square rounded-xl overflow-hidden shadow-2xl border-4 border-[#F4EFEA]">
+          <div class="absolute -bottom-6 -right-6 hidden sm:block w-48 aspect-square rounded-xl overflow-hidden shadow-2xl border-4 border-white">
             <img 
               src="https://images.unsplash.com/photo-1602928321679-560bb453f190?q=80&w=800&auto=format&fit=crop" 
               alt="Brass detail" 
@@ -270,10 +251,9 @@
           </div>
         </div>
 
-        <!-- 텍스트 스토리 -->
         <div class="lg:pl-8 space-y-6">
           <span class="text-xs font-semibold tracking-[0.25em] uppercase text-stone-500">Brand Philosophy</span>
-          <h2 class="font-serif text-3xl sm:text-4xl text-stone-900 leading-tight">
+          <h2 class="font-serif text-3xl sm:text-4xl leading-tight">
             비우는 것에서 시작하는<br />
             진정한 채움의 시간.
           </h2>
@@ -302,13 +282,12 @@
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
     <div class="text-center max-w-xl mx-auto mb-12">
       <span class="text-xs font-semibold tracking-[0.2em] uppercase text-stone-500">Real Reviews</span>
-      <h2 class="font-serif text-3xl sm:text-4xl text-stone-900 mt-2 mb-3">고객들의 공간에 닿은 눅</h2>
+      <h2 class="font-serif text-3xl sm:text-4xl mt-2 mb-3">고객들의 공간에 닿은 눅</h2>
       <p class="text-xs sm:text-sm text-stone-500">실제 고객님들의 공간에서 피어난 아틀리에 눅의 기록입니다.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- 리뷰 1 -->
-      <div class="bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col justify-between">
+      <div class="p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col justify-between bg-white">
         <div>
           <div class="flex items-center gap-1 text-amber-500 mb-3">
             <i data-lucide="star" class="w-4 h-4 fill-current"></i>
@@ -327,8 +306,7 @@
         </div>
       </div>
 
-      <!-- 리뷰 2 -->
-      <div class="bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col justify-between">
+      <div class="p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col justify-between bg-white">
         <div>
           <div class="flex items-center gap-1 text-amber-500 mb-3">
             <i data-lucide="star" class="w-4 h-4 fill-current"></i>
@@ -347,8 +325,7 @@
         </div>
       </div>
 
-      <!-- 리뷰 3 -->
-      <div class="bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col justify-between">
+      <div class="p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col justify-between bg-white">
         <div>
           <div class="flex items-center gap-1 text-amber-500 mb-3">
             <i data-lucide="star" class="w-4 h-4 fill-current"></i>
@@ -374,9 +351,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
         
-        <!-- 브랜드 정보 -->
         <div class="md:col-span-1 space-y-4">
-          <span class="font-serif text-2xl tracking-[0.25em] uppercase text-white block">ATELIER NOOK</span>
+          <span class="brand-logo-text font-serif text-2xl tracking-[0.25em] uppercase text-white block">ATELIER NOOK</span>
           <p class="text-xs text-stone-400 leading-relaxed">
             일상을 채우는 조용하고 단단한 오브제.<br />
             공간과 사람의 온도를 잇는 감각적인 라이프스타일 셀렉트숍.
@@ -387,7 +363,6 @@
           </div>
         </div>
 
-        <!-- 메뉴 링크 -->
         <div>
           <h4 class="text-xs font-semibold uppercase tracking-wider text-white mb-4">Shop Categories</h4>
           <ul class="space-y-2 text-xs text-stone-400">
@@ -398,7 +373,6 @@
           </ul>
         </div>
 
-        <!-- 고객 센터 -->
         <div>
           <h4 class="text-xs font-semibold uppercase tracking-wider text-white mb-4">Customer Care</h4>
           <p class="text-xs text-stone-400 leading-relaxed mb-3">
@@ -411,7 +385,6 @@
           </p>
         </div>
 
-        <!-- 뉴스레터 구독 -->
         <div>
           <h4 class="text-xs font-semibold uppercase tracking-wider text-white mb-4">Newsletter</h4>
           <p class="text-xs text-stone-400 leading-relaxed mb-3">
@@ -432,7 +405,6 @@
 
       </div>
 
-      <!-- 하단 저작권 및 사업자 안내 -->
       <div class="pt-8 border-t border-stone-800 text-[11px] text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p>© 2026 ATELIER NOOK. All rights reserved. Designed with taste.</p>
         <p>상호명: 아틀리에 눅 | 대표: 사용자 | 사업자등록번호: 000-00-00000 | 통신판매업신고: 제2026-서울강남-0000호</p>
@@ -440,21 +412,157 @@
     </div>
   </footer>
 
+  <!-- ================= FLOATING THEME CUSTOMIZER BUTTON ================= -->
+  <button 
+    onclick="toggleThemePanel()"
+    class="theme-trigger-btn fixed bottom-6 left-6 z-40 px-4 py-3 bg-stone-900 text-white rounded-full shadow-2xl flex items-center gap-2 text-xs font-medium hover:bg-stone-800 transition-transform hover:scale-105 active:scale-95 border border-stone-700"
+    title="디자인 스타일 변경"
+  >
+    <i data-lucide="palette" class="w-4 h-4 text-amber-400"></i>
+    <span>🎨 디자인 스타일 변경</span>
+  </button>
+
+  <!-- ================= THEME CUSTOMIZER DRAWER ================= -->
+  <div id="theme-backdrop" onclick="toggleThemePanel()" class="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+  <div id="theme-customizer-drawer" class="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white shadow-2xl z-50 p-6 overflow-y-auto translate-x-full transition-transform duration-300 flex flex-col justify-between">
+    <div>
+      <div class="flex items-center justify-between pb-4 mb-6 border-b border-stone-200">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-stone-900"></i>
+          <h3 class="font-serif text-xl font-medium text-stone-900">디자인 스튜디오</h3>
+        </div>
+        <button onclick="toggleThemePanel()" class="p-1.5 text-stone-400 hover:text-stone-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- 1. 감성 테마 프리셋 -->
+      <div class="mb-6">
+        <label class="block text-xs font-semibold text-stone-800 uppercase tracking-wider mb-2.5">
+          1. 컬러 & 감성 테마 프리셋
+        </label>
+        <div class="grid grid-cols-1 gap-2">
+          <button id="theme-btn-default" onclick="selectTheme('default')" class="theme-opt-btn flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:border-stone-900 transition-all text-left">
+            <div class="flex items-center gap-3">
+              <span class="w-4 h-4 rounded-full bg-[#FAF8F5] border border-stone-300 shadow-sm"></span>
+              <span class="text-xs font-medium text-stone-800">🌾 웜 미니멀 (Warm Minimal)</span>
+            </div>
+            <span class="text-[10px] text-stone-400">기본</span>
+          </button>
+
+          <button id="theme-btn-mono" onclick="selectTheme('mono')" class="theme-opt-btn flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:border-stone-900 transition-all text-left">
+            <div class="flex items-center gap-3">
+              <span class="w-4 h-4 rounded-full bg-black border border-stone-300 shadow-sm"></span>
+              <span class="text-xs font-medium text-stone-800">🖤 모던 모노크롬 (시크 블랙 & 화이트)</span>
+            </div>
+            <span class="text-[10px] text-stone-400">아크네/자라</span>
+          </button>
+
+          <button id="theme-btn-sage" onclick="selectTheme('sage')" class="theme-opt-btn flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:border-stone-900 transition-all text-left">
+            <div class="flex items-center gap-3">
+              <span class="w-4 h-4 rounded-full bg-[#384E3A] shadow-sm"></span>
+              <span class="text-xs font-medium text-stone-800">🌿 내추럴 세이지 (친환경 & 숲)</span>
+            </div>
+            <span class="text-[10px] text-stone-400">보태니컬</span>
+          </button>
+
+          <button id="theme-btn-midnight" onclick="selectTheme('midnight')" class="theme-opt-btn flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:border-stone-900 transition-all text-left">
+            <div class="flex items-center gap-3">
+              <span class="w-4 h-4 rounded-full bg-[#121212] border border-[#D4AF37] shadow-sm"></span>
+              <span class="text-xs font-medium text-stone-800">🌙 미드나잇 럭셔리 (블랙 & 골드)</span>
+            </div>
+            <span class="text-[10px] text-stone-400">다크모드</span>
+          </button>
+
+          <button id="theme-btn-butter" onclick="selectTheme('butter')" class="theme-opt-btn flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:border-stone-900 transition-all text-left">
+            <div class="flex items-center gap-3">
+              <span class="w-4 h-4 rounded-full bg-[#FCF9EE] border border-amber-300 shadow-sm"></span>
+              <span class="text-xs font-medium text-stone-800">🧈 코지 버터 (따뜻한 옐로우)</span>
+            </div>
+            <span class="text-[10px] text-stone-400">러블리</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. 카드 모서리 스타일 -->
+      <div class="mb-6">
+        <label class="block text-xs font-semibold text-stone-800 uppercase tracking-wider mb-2.5">
+          2. 모서리 둥글기 (Border Radius)
+        </label>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <button onclick="selectRadius('sharp')" class="py-2.5 border border-stone-200 rounded hover:border-stone-900 font-medium text-stone-700 text-center">
+            각진 모던
+          </button>
+          <button onclick="selectRadius('medium')" class="py-2.5 border border-stone-200 rounded-xl hover:border-stone-900 font-medium text-stone-700 text-center">
+            부드러운
+          </button>
+          <button onclick="selectRadius('soft')" class="py-2.5 border border-stone-200 rounded-2xl hover:border-stone-900 font-medium text-stone-700 text-center">
+            둥글둥글
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. 그리드 컬럼 수 -->
+      <div class="mb-6">
+        <label class="block text-xs font-semibold text-stone-800 uppercase tracking-wider mb-2.5">
+          3. 상품 진열 컬럼 (그리드)
+        </label>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <button onclick="selectGridCols(2)" class="py-2.5 border border-stone-200 rounded-lg hover:border-stone-900 font-medium text-stone-700 text-center">
+            2열 (룩북)
+          </button>
+          <button onclick="selectGridCols(3)" class="py-2.5 border border-stone-200 rounded-lg hover:border-stone-900 font-medium text-stone-700 text-center">
+            3열 (클래식)
+          </button>
+          <button onclick="selectGridCols(4)" class="py-2.5 border border-stone-200 rounded-lg hover:border-stone-900 font-medium text-stone-700 text-center">
+            4열 (기본)
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. 실시간 브랜드명 & 슬로건 변경 -->
+      <div class="mb-6">
+        <label class="block text-xs font-semibold text-stone-800 uppercase tracking-wider mb-2.5">
+          4. 텍스트 즉시 변경
+        </label>
+        <div class="space-y-3">
+          <div>
+            <span class="text-[11px] text-stone-500 block mb-1">브랜드명</span>
+            <input 
+              type="text" 
+              placeholder="예: ATELIER NOOK" 
+              oninput="updateBrandText(this)" 
+              class="w-full px-3 py-2 border border-stone-300 rounded-lg text-xs focus:ring-1 focus:ring-stone-900 focus:outline-none"
+            />
+          </div>
+          <div>
+            <span class="text-[11px] text-stone-500 block mb-1">메인 카피 문구</span>
+            <input 
+              type="text" 
+              placeholder="예: Form follows soul." 
+              oninput="updateHeroTitle(this)" 
+              class="w-full px-3 py-2 border border-stone-300 rounded-lg text-xs focus:ring-1 focus:ring-stone-900 focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 초기화 버튼 -->
+    <div class="pt-4 border-t border-stone-200">
+      <button 
+        onclick="localStorage.removeItem('atelier_theme_settings'); location.reload();" 
+        class="w-full py-2.5 text-xs text-stone-500 hover:text-stone-900 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
+      >
+        기본 설정으로 되돌리기
+      </button>
+    </div>
+  </div>
+
   <!-- ================= CART SLIDE DRAWER ================= -->
   <div id="cart-drawer" class="fixed inset-0 z-50 pointer-events-none">
-    <!-- 백드롭 -->
-    <div 
-      id="cart-backdrop" 
-      onclick="closeCartDrawer()" 
-      class="drawer-backdrop absolute inset-0 bg-stone-900/60 backdrop-blur-sm opacity-0"
-    ></div>
-
-    <!-- 슬라이드 패널 -->
-    <div 
-      id="cart-panel" 
-      class="drawer-content absolute top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col translate-x-full"
-    >
-      <!-- 드로어 헤더 -->
+    <div id="cart-backdrop" onclick="closeCartDrawer()" class="drawer-backdrop absolute inset-0 bg-stone-900/60 backdrop-blur-sm opacity-0"></div>
+    <div id="cart-panel" class="drawer-content absolute top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col translate-x-full">
       <div class="px-6 py-5 border-b border-stone-200 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i data-lucide="shopping-bag" class="w-5 h-5 text-stone-900"></i>
@@ -467,7 +575,6 @@
         </button>
       </div>
 
-      <!-- 무료 배송 진행 바 -->
       <div class="bg-stone-50 px-6 py-3 border-b border-stone-200/80">
         <div class="flex items-center justify-between text-xs text-stone-600 mb-1.5" id="shipping-progress-text">
           <span>50,000원 이상 구매 시 <strong>무료배송</strong></span>
@@ -477,13 +584,8 @@
         </div>
       </div>
 
-      <!-- 아이템 리스트 영역 -->
       <div class="flex-1 overflow-y-auto p-6 space-y-4" id="cart-items-container">
-        <div id="cart-items-list" class="space-y-3">
-          <!-- 동적 리스트 렌더링 -->
-        </div>
-
-        <!-- 빈 카트 상태 -->
+        <div id="cart-items-list" class="space-y-3"></div>
         <div id="cart-empty" class="hidden h-full flex flex-col items-center justify-center text-center py-16 text-stone-400">
           <i data-lucide="shopping-bag" class="w-12 h-12 mb-3 opacity-40"></i>
           <p class="text-sm font-medium text-stone-600">쇼핑백이 비어 있습니다.</p>
@@ -494,7 +596,6 @@
         </div>
       </div>
 
-      <!-- 드로어 푸터 (결제 요약) -->
       <div id="cart-footer" class="p-6 border-t border-stone-200 bg-stone-50 space-y-3">
         <div class="space-y-1.5 text-xs text-stone-600">
           <div class="flex justify-between">
@@ -519,7 +620,6 @@
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
       </div>
-
     </div>
   </div>
 
@@ -530,9 +630,7 @@
       <button onclick="closeQuickView()" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800" aria-label="닫기">
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
-      <div id="quick-modal-content">
-        <!-- JS로 동적 주입 -->
-      </div>
+      <div id="quick-modal-content"></div>
     </div>
   </div>
 
@@ -546,7 +644,6 @@
 
       <h3 class="font-serif text-xl font-medium text-stone-900 mb-4 pb-2 border-b border-stone-200">주문 & 결제 시뮬레이션</h3>
 
-      <!-- 주문 상품 요약 -->
       <div class="mb-5 bg-stone-50 p-4 rounded-xl border border-stone-200">
         <h4 class="text-xs font-semibold text-stone-800 mb-2">주문 내역</h4>
         <div id="checkout-summary-items" class="space-y-1 mb-2"></div>
@@ -556,7 +653,6 @@
         </div>
       </div>
 
-      <!-- 배송지 정보 입력 폼 -->
       <form onsubmit="processPayment(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-stone-700 mb-1">받는 분 성함</label>
@@ -638,10 +734,7 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
-      <div id="wishlist-items-container">
-        <!-- JS로 동적 렌더링 -->
-      </div>
+      <div id="wishlist-items-container"></div>
     </div>
   </div>
 
