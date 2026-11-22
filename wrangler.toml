@@ -1,0 +1,10 @@
+# Cloudflare Pages 설정 (프로젝트: sellthailand)
+# 비밀번호(ADMIN_PASSWORD)는 여기에 쓰지 말고 대시보드에서 "암호화(Secret)"로 넣으세요.
+name = "sellthailand"
+pages_build_output_dir = "."
+compatibility_date = "2024-09-23"
+
+# 관리자 모드 데이터(상품 목록, 업로드 사진) 저장소
+[[kv_namespaces]]
+binding = "SELLTHAI_KV"
+id = "f4d413174bb5410bb72034bc24169aa1"
