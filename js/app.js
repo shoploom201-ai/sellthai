@@ -109,7 +109,8 @@ function applySavedTheme() {
   // 3. 그리드 컬럼 적용
   const gridEl = document.getElementById('product-grid');
   if (gridEl) {
-    gridEl.className = `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${gridCols || 4} gap-6`;
+    // 모바일은 항상 2열 (한 화면에 상품 4개), 데스크톱은 설정값
+    gridEl.className = `grid grid-cols-2 lg:grid-cols-${gridCols || 4} gap-x-3 gap-y-4 sm:gap-6`;
   }
 
   // 4. 브랜드명 & 타이틀 적용
@@ -293,9 +294,9 @@ function renderProducts() {
           />
 
           <!-- 뱃지 -->
-          <div class="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-            ${product.tag ? `<span class="px-2.5 py-1 text-[11px] font-semibold tracking-wider uppercase rounded-full ${product.badgeColor || 'bg-stone-900 text-white'}">${product.tag}</span>` : ''}
-            ${hasDiscount ? `<span class="px-2 py-0.5 text-[11px] font-bold bg-amber-600 text-white rounded-full">${discountRate}% OFF</span>` : ''}
+          <div class="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col items-start gap-1 sm:gap-1.5 z-10">
+            ${product.tag ? `<span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[11px] font-semibold tracking-wider uppercase rounded-full ${product.badgeColor || 'bg-stone-900 text-white'}">${product.tag}</span>` : ''}
+            ${hasDiscount ? `<span class="px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[11px] font-bold bg-amber-600 text-white rounded-full">${discountRate}% OFF</span>` : ''}
           </div>
 
           <!-- 위시리스트 버튼 -->
@@ -303,7 +304,7 @@ function renderProducts() {
             type="button"
             onclick="event.stopPropagation(); toggleWishlist(${product.id})"
             aria-label="찜하기"
-            class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-transform hover:scale-110 active:scale-95 ${isWished ? 'text-red-500' : 'text-stone-400 hover:text-stone-700'}"
+            class="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center transition-transform hover:scale-110 active:scale-95 ${isWished ? 'text-red-500' : 'text-stone-400 hover:text-stone-700'}"
           >
             <i data-lucide="heart" class="w-4 h-4 ${isWished ? 'fill-current' : ''}"></i>
           </button>
@@ -330,36 +331,36 @@ function renderProducts() {
         </div>
 
         <!-- 상품 텍스트 정보 -->
-        <div class="p-4 flex flex-col flex-1 justify-between">
+        <div class="pt-2 px-0.5 sm:p-4 flex flex-col flex-1 justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs text-stone-400 mb-1">
-              <span>${product.categoryName}</span>
+            <div class="flex items-center justify-between text-[11px] sm:text-xs text-stone-400 mb-0.5 sm:mb-1">
+              <span class="hidden sm:inline">${product.categoryName}</span>
               <div class="flex items-center gap-1 text-amber-500">
-                <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                <i data-lucide="star" class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current"></i>
                 <span class="font-medium text-stone-600">${product.rating}</span>
                 <span class="text-stone-400">(${product.reviewCount})</span>
               </div>
             </div>
             <h3 
               onclick="openQuickView(${product.id})" 
-              class="font-medium text-stone-900 text-sm md:text-base leading-snug line-clamp-1 hover:text-stone-600 cursor-pointer"
+              class="font-medium text-stone-900 text-[15px] sm:text-sm md:text-base leading-snug truncate hover:text-stone-600 cursor-pointer"
             >
               ${product.name}
             </h3>
-            <p class="text-xs text-stone-500 line-clamp-2 mt-1.5 mb-3 leading-relaxed">
+            <p class="hidden sm:block text-xs text-stone-500 line-clamp-2 mt-1.5 mb-3 leading-relaxed">
               ${product.summary}
             </p>
           </div>
 
-          <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
-            <div>
-              ${hasDiscount ? `<span class="text-xs text-stone-400 line-through mr-1.5">${formatPrice(product.originalPrice)}</span>` : ''}
-              <span class="text-base font-semibold text-stone-900 tracking-tight">${formatPrice(product.price)}</span>
+          <div class="sm:pt-2 sm:border-t border-stone-100 flex items-center justify-between gap-1">
+            <div class="min-w-0 leading-tight truncate">
+              <span class="text-base font-bold sm:font-semibold ${hasDiscount ? 'text-amber-700 sm:text-stone-900' : 'text-stone-900'} tracking-tight">${formatPrice(product.price)}</span>
+              ${hasDiscount ? `<span class="text-[11px] sm:text-xs text-stone-400 line-through ml-1 sm:ml-1.5">${formatPrice(product.originalPrice)}</span>` : ''}
             </div>
             <button 
               type="button"
               onclick="event.stopPropagation(); quickAddToCart(${product.id})"
-              class="md:hidden p-2 rounded-lg bg-stone-100 text-stone-700 active:bg-stone-200"
+              class="md:hidden shrink-0 p-1.5 sm:p-2 rounded-lg sm:bg-stone-100 text-stone-600 active:bg-stone-200"
               aria-label="장바구니 담기"
             >
               <i data-lucide="shopping-bag" class="w-4 h-4"></i>
