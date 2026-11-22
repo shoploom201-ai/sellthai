@@ -155,7 +155,7 @@ function resetThemeSettings() {
   showToast('기본 디자인으로 되돌렸습니다.', 'theme');
 }
 
-// 저장된 디자인 설정 불러오기 + 관리자면 '디자인 스타일 변경' 버튼 표시
+// 저장된 디자인 설정 불러오기 + 관리자 화면에서 열었으면(/?design=1) 디자인 패널 열기
 async function loadSiteSettings() {
   try {
     const res = await fetch('/api/settings', { cache: 'no-store' });
@@ -174,8 +174,6 @@ async function loadSiteSettings() {
     STATE.isAdmin = Boolean(me.loggedIn);
   } catch {}
 
-  const trigger = document.getElementById('theme-trigger-btn');
-  if (trigger) trigger.classList.toggle('hidden', !STATE.isAdmin);
   if (STATE.isAdmin && new URLSearchParams(location.search).has('design')) toggleThemePanel();
 }
 
