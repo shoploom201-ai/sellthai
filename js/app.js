@@ -783,4 +783,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 아이콘 렌더링
   lucide.createIcons();
+
+  loadSavedProducts();
 });
+
+// 관리자 페이지에서 저장한 상품이 있으면 기본 데이터 대신 사용
+async function loadSavedProducts() {
+  if (location.protocol === 'file:') return; // 파일로 직접 열었을 때는 기본 데이터 사용
+  try {
+    const res = await fetch('/api/products', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!Array.isArray(data.products)) return;
+
+    PRODUCTS = data.products.filter(p => Array.isArray(p.images) && p.images.length > 0);
+    // 삭제된 상품은 위시리스트에서 정리
+    STATE.wishlist = STATE.wishlist.filter(id => PRODUCTS.some(p => p.id === id));
+    saveState();
+    renderProducts();
+    lucide.createIcons();
+  } catch {
+    // API가 없는 환경(로컬 정적 서버 등)에서는 기본 데이터 유지
+  }
+}

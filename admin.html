@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>관리자 | ATELIER NOOK</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: "Pretendard", -apple-system, "Malgun Gothic", sans-serif; }
+    .field { width: 100%; border: 1px solid #d6d3d1; border-radius: .5rem; padding: .6rem .75rem; background: #fff; font-size: .95rem; }
+    .field:focus { outline: 2px solid #1c1917; outline-offset: -1px; border-color: transparent; }
+    .label { display: block; font-size: .85rem; font-weight: 600; color: #44403c; margin-bottom: .35rem; }
+    .dropzone.drag { background: #f5f5f4; border-color: #1c1917; }
+  </style>
+</head>
+<body class="bg-[#FAF8F5] text-stone-900 min-h-screen">
+
+  <!-- 로그인 화면 -->
+  <section id="login-view" class="hidden min-h-screen flex items-center justify-center px-4">
+    <form id="login-form" class="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
+      <h1 class="text-2xl font-bold mb-1">관리자 로그인</h1>
+      <p class="text-sm text-stone-500 mb-6">ATELIER NOOK 상품 관리</p>
+      <label class="label" for="password">비밀번호</label>
+      <input id="password" type="password" class="field mb-4" autocomplete="current-password" required autofocus />
+      <p id="login-error" class="hidden text-sm text-red-700 mb-4"></p>
+      <button class="w-full bg-stone-900 text-white rounded-lg py-3 font-semibold hover:bg-stone-700">로그인</button>
+      <a href="/" class="block text-center text-sm text-stone-500 mt-4 hover:underline">← 사이트로 돌아가기</a>
+    </form>
+  </section>
+
+  <!-- 설정 안 됨 안내 -->
+  <section id="setup-view" class="hidden min-h-screen flex items-center justify-center px-4">
+    <div class="max-w-lg bg-white rounded-2xl border border-stone-200 p-8">
+      <h1 class="text-xl font-bold mb-3">관리자 기능 설정이 필요합니다</h1>
+      <p id="setup-message" class="text-stone-600 text-sm leading-relaxed"></p>
+    </div>
+  </section>
+
+  <!-- 관리 화면 -->
+  <section id="admin-view" class="hidden">
+    <header class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-stone-200">
+      <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+        <div class="font-bold">ATELIER NOOK <span class="text-stone-400 font-normal">관리자</span></div>
+        <div class="flex items-center gap-2">
+          <a href="/" target="_blank" class="text-sm px-3 py-2 rounded-lg hover:bg-stone-100">사이트 보기</a>
+          <button id="logout-btn" class="text-sm px-3 py-2 rounded-lg hover:bg-stone-100">로그아웃</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 grid gap-6 lg:grid-cols-[320px_1fr]">
+      <!-- 상품 목록 -->
+      <aside>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold">상품 목록 <span id="count" class="text-stone-400 font-normal"></span></h2>
+          <button id="add-btn" class="text-sm bg-stone-900 text-white px-3 py-2 rounded-lg hover:bg-stone-700">+ 새 상품</button>
+        </div>
+        <ul id="product-list" class="space-y-2"></ul>
+        <p class="text-xs text-stone-500 mt-3">▲▼ 버튼으로 사이트에 보이는 순서를 바꿀 수 있습니다.</p>
+      </aside>
+
+      <!-- 편집 폼 -->
+      <section>
+        <div id="empty-editor" class="bg-white rounded-2xl border border-stone-200 p-10 text-center text-stone-500">
+          왼쪽에서 상품을 선택하거나 <b>+ 새 상품</b>을 눌러주세요.
+        </div>
+
+        <form id="editor" class="hidden bg-white rounded-2xl border border-stone-200 p-6 space-y-6">
+          <div>
+            <span class="label">사진 <span class="font-normal text-stone-500">(첫 번째 사진이 대표 사진, 두 번째는 마우스를 올렸을 때 보이는 사진)</span></span>
+            <div id="image-grid" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-3"></div>
+            <label id="dropzone" class="dropzone flex flex-col items-center justify-center border-2 border-dashed border-stone-300 rounded-xl py-8 cursor-pointer hover:bg-stone-50 text-center">
+              <span class="font-semibold">사진 올리기</span>
+              <span class="text-sm text-stone-500">클릭하거나 사진을 여기로 끌어다 놓으세요 (여러 장 가능)</span>
+              <input id="file-input" type="file" accept="image/*" multiple class="hidden" />
+            </label>
+            <p id="upload-status" class="text-sm text-stone-500 mt-2"></p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="label" for="f-name">상품명 *</label>
+              <input id="f-name" class="field" required maxlength="200" />
+            </div>
+            <div>
+              <label class="label" for="f-category">카테고리</label>
+              <select id="f-category" class="field">
+                <option value="ceramics">도자기 & 오브제</option>
+                <option value="scent">향 & 캔들</option>
+                <option value="lighting">조명 & 라이팅</option>
+                <option value="fabric">패브릭 & 베딩</option>
+                <option value="living">리빙 & 키친</option>
+              </select>
+            </div>
+            <div>
+              <label class="label" for="f-tag">뱃지</label>
+              <select id="f-tag" class="field">
+                <option value="">없음</option>
+                <option>BEST</option><option>NEW</option><option>SALE</option>
+                <option>SET</option><option>GIFT SET</option><option>SUSTAINABLE</option>
+              </select>
+            </div>
+            <div>
+              <label class="label" for="f-price">판매가 (원) *</label>
+              <input id="f-price" type="number" min="0" step="100" class="field" required />
+            </div>
+            <div>
+              <label class="label" for="f-original">정가 (원) <span class="font-normal text-stone-500">— 할인 시에만</span></label>
+              <input id="f-original" type="number" min="0" step="100" class="field" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="label" for="f-summary">한 줄 소개</label>
+              <input id="f-summary" class="field" maxlength="300" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="label" for="f-description">상세 설명</label>
+              <textarea id="f-description" rows="5" class="field" maxlength="5000"></textarea>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="label" for="f-options">옵션 <span class="font-normal text-stone-500">— 쉼표(,)로 구분. 예: 아이보리, 샌드, 테라코타</span></label>
+              <input id="f-options" class="field" />
+            </div>
+            <div>
+              <label class="label" for="f-dimensions">사이즈 / 무게</label>
+              <input id="f-dimensions" class="field" maxlength="200" />
+            </div>
+            <div>
+              <label class="label" for="f-material">소재</label>
+              <input id="f-material" class="field" maxlength="200" />
+            </div>
+            <div>
+              <label class="label" for="f-rating">평점 (0~5)</label>
+              <input id="f-rating" type="number" min="0" max="5" step="0.1" class="field" />
+            </div>
+            <div>
+              <label class="label" for="f-reviews">리뷰 수</label>
+              <input id="f-reviews" type="number" min="0" step="1" class="field" />
+            </div>
+            <div class="sm:col-span-2 flex flex-wrap gap-6">
+              <label class="flex items-center gap-2"><input id="f-new" type="checkbox" class="w-4 h-4" /> 신상품</label>
+              <label class="flex items-center gap-2"><input id="f-popular" type="checkbox" class="w-4 h-4" /> 인기상품</label>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-stone-200">
+            <button type="button" id="delete-btn" class="text-sm text-red-700 px-3 py-2 rounded-lg hover:bg-red-50">이 상품 삭제</button>
+            <button type="submit" id="save-btn" class="bg-stone-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-stone-700 disabled:opacity-50">저장하기</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </section>
+
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg text-white text-sm shadow-lg"></div>
+
+  <!-- 기본 상품 데이터 (저장된 데이터가 없을 때 시작점으로 사용) -->
+  <script src="js/data.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const MAX_IMAGE_SIDE = 1600;
+
+    let products = [];
+    let selectedId = null;   // 편집 중인 상품 id (새 상품은 'new')
+    let draftImages = [];    // 편집 중인 사진 URL 목록
+    let uploading = 0;
+
+    // ---------- 공용 ----------
+    function toast(message, isError = false) {
+      const el = $('toast');
+      el.textContent = message;
+      el.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg text-white text-sm shadow-lg ${isError ? 'bg-red-700' : 'bg-stone-900'}`;
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(path, { credentials: 'same-origin', ...options });
+      let data = {};
+      try { data = await res.json(); } catch {}
+      if (res.status === 401 && path !== '/api/login') {
+        showView('login');
+        throw new Error('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+      }
+      if (!res.ok) throw new Error(data.error || `요청 실패 (${res.status})`);
+      return data;
+    }
+
+    function showView(name) {
+      for (const v of ['login', 'setup', 'admin']) $(`${v}-view`).classList.toggle('hidden', v !== name);
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function formatPrice(n) {
+      return new Intl.NumberFormat('ko-KR').format(n || 0) + '원';
+    }
+
+    // ---------- 시작 ----------
+    async function start() {
+      try {
+        const me = await api('/api/me');
+        if (!me.configured) {
+          $('setup-message').innerHTML = 'Cloudflare Pages 프로젝트 설정에서 <b>ADMIN_PASSWORD</b>(환경 변수, 암호화)와 <b>SELLTHAI_KV</b>(KV 네임스페이스 바인딩)를 추가한 뒤 다시 배포해 주세요. 자세한 방법은 README의 "관리자 모드 설정"을 참고하세요.';
+          return showView('setup');
+        }
+        if (!me.loggedIn) return showView('login');
+        await loadAdmin();
+      } catch (err) {
+        $('setup-message').textContent = '서버에 연결할 수 없습니다. 관리자 모드는 Cloudflare Pages에 배포된 사이트(또는 wrangler pages dev)에서만 동작합니다.';
+        showView('setup');
+      }
+    }
+
+    async function loadAdmin() {
+      const data = await api('/api/products');
+      products = Array.isArray(data.products)
+        ? data.products
+        : (typeof PRODUCTS !== 'undefined' ? JSON.parse(JSON.stringify(PRODUCTS)) : []);
+      showView('admin');
+      renderList();
+      closeEditor();
+    }
+
+    // ---------- 로그인 ----------
+    $('login-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const err = $('login-error');
+      err.classList.add('hidden');
+      try {
+        await api('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: $('password').value })
+        });
+        $('password').value = '';
+        await loadAdmin();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+      }
+    });
+
+    $('logout-btn').addEventListener('click', async () => {
+      try { await api('/api/logout', { method: 'POST' }); } catch {}
+      showView('login');
+    });
+
+    // ---------- 목록 ----------
+    function renderList() {
+      $('count').textContent = `(${products.length})`;
+      $('product-list').innerHTML = products.map((p, i) => `
+        <li class="flex items-center gap-3 bg-white border rounded-xl p-2 ${p.id === selectedId ? 'border-stone-900 ring-1 ring-stone-900' : 'border-stone-200'}">
+          <button type="button" data-select="${p.id}" class="flex items-center gap-3 flex-1 min-w-0 text-left">
+            ${p.images && p.images[0]
+              ? `<img src="${escapeHtml(p.images[0])}" alt="" class="w-14 h-14 rounded-lg object-cover bg-stone-100 shrink-0" />`
+              : `<div class="w-14 h-14 rounded-lg bg-stone-100 shrink-0 flex items-center justify-center text-xs text-stone-400">사진 없음</div>`}
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold truncate">${escapeHtml(p.name)}</span>
+              <span class="block text-xs text-stone-500">${formatPrice(p.price)}</span>
+            </span>
+          </button>
+          <span class="flex flex-col">
+            <button type="button" data-move="${i}" data-dir="-1" class="px-2 text-stone-400 hover:text-stone-900 disabled:opacity-20" ${i === 0 ? 'disabled' : ''} aria-label="위로">▲</button>
+            <button type="button" data-move="${i}" data-dir="1" class="px-2 text-stone-400 hover:text-stone-900 disabled:opacity-20" ${i === products.length - 1 ? 'disabled' : ''} aria-label="아래로">▼</button>
+          </span>
+        </li>`).join('');
+    }
+
+    $('product-list').addEventListener('click', async e => {
+      const select = e.target.closest('[data-select]');
+      if (select) return openEditor(Number(select.dataset.select));
+
+      const move = e.target.closest('[data-move]');
+      if (move) {
+        const i = Number(move.dataset.move);
+        const j = i + Number(move.dataset.dir);
+        if (j < 0 || j >= products.length) return;
+        const next = [...products];
+        [next[i], next[j]] = [next[j], next[i]];
+        await saveAll(next, '순서를 변경했습니다.');
+      }
+    });
+
+    $('add-btn').addEventListener('click', () => openEditor('new'));
+
+    // ---------- 편집 ----------
+    function closeEditor() {
+      selectedId = null;
+      $('editor').classList.add('hidden');
+      $('empty-editor').classList.remove('hidden');
+      renderList();
+    }
+
+    function openEditor(id) {
+      const p = id === 'new'
+        ? { name: '', category: 'living', tag: '', price: '', originalPrice: '', summary: '', description: '', options: [], dimensions: '', material: '', rating: 5, reviewCount: 0, images: [], isNew: true, isPopular: false }
+        : products.find(x => x.id === id);
+      if (!p) return;
+
+      selectedId = id;
+      draftImages = [...(p.images || [])];
+      $('f-name').value = p.name || '';
+      $('f-category').value = p.category || 'living';
+      $('f-tag').value = p.tag || '';
+      $('f-price').value = p.price ?? '';
+      $('f-original').value = p.originalPrice ?? '';
+      $('f-summary').value = p.summary || '';
+      $('f-description').value = p.description || '';
+      $('f-options').value = (p.options || []).filter(o => o !== '단일상품').join(', ');
+      $('f-dimensions').value = p.dimensions || '';
+      $('f-material').value = p.material || '';
+      $('f-rating').value = p.rating ?? 5;
+      $('f-reviews').value = p.reviewCount ?? 0;
+      $('f-new').checked = Boolean(p.isNew);
+      $('f-popular').checked = Boolean(p.isPopular);
+      $('delete-btn').classList.toggle('hidden', id === 'new');
+      $('upload-status').textContent = '';
+
+      $('empty-editor').classList.add('hidden');
+      $('editor').classList.remove('hidden');
+      renderImages();
+      renderList();
+      if (window.innerWidth < 1024) $('editor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderImages() {
+      $('image-grid').innerHTML = draftImages.map((url, i) => `
+        <div class="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 border ${i === 0 ? 'border-stone-900' : 'border-stone-200'}">
+          <img src="${escapeHtml(url)}" alt="" class="w-full h-full object-cover" />
+          ${i === 0 ? '<span class="absolute top-1 left-1 bg-stone-900 text-white text-[10px] px-1.5 py-0.5 rounded">대표</span>' : ''}
+          <div class="absolute inset-x-0 bottom-0 flex justify-between bg-black/50 text-white text-xs">
+            <button type="button" data-img-first="${i}" class="px-2 py-1 hover:bg-black/40 ${i === 0 ? 'invisible' : ''}">대표로</button>
+            <button type="button" data-img-remove="${i}" class="px-2 py-1 hover:bg-black/40">삭제</button>
+          </div>
+        </div>`).join('');
+    }
+
+    $('image-grid').addEventListener('click', e => {
+      const first = e.target.closest('[data-img-first]');
+      if (first) {
+        const [img] = draftImages.splice(Number(first.dataset.imgFirst), 1);
+        draftImages.unshift(img);
+        return renderImages();
+      }
+      const remove = e.target.closest('[data-img-remove]');
+      if (remove) {
+        draftImages.splice(Number(remove.dataset.imgRemove), 1);
+        renderImages();
+      }
+    });
+
+    // ---------- 사진 업로드 ----------
+    // 큰 사진은 브라우저에서 줄여서 올림 (빠르고 용량 절약)
+    function resizeImage(file) {
+      return new Promise((resolve, reject) => {
+        if (file.type === 'image/gif') return resolve(file); // 움직이는 GIF는 그대로
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          const scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('사진 변환 실패')), 'image/jpeg', 0.85);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(`${file.name}: 열 수 없는 사진입니다.`)); };
+        img.src = url;
+      });
+    }
+
+    async function uploadFiles(files) {
+      const list = [...files].filter(f => f.type.startsWith('image/'));
+      if (!list.length) return;
+      const room = 10 - draftImages.length;
+      if (room <= 0) return toast('사진은 상품당 최대 10장까지 올릴 수 있습니다.', true);
+
+      uploading++;
+      $('save-btn').disabled = true;
+      let done = 0;
+      for (const file of list.slice(0, room)) {
+        $('upload-status').textContent = `사진 올리는 중... (${done + 1}/${Math.min(list.length, room)})`;
+        try {
+          const blob = await resizeImage(file);
+          const form = new FormData();
+          form.append('file', blob, file.name.replace(/\.\w+$/, '') + (blob.type === 'image/gif' ? '.gif' : '.jpg'));
+          const data = await api('/api/upload', { method: 'POST', body: form });
+          draftImages.push(data.url);
+          renderImages();
+          done++;
+        } catch (err) {
+          toast(err.message, true);
+        }
+      }
+      uploading--;
+      $('save-btn').disabled = uploading > 0;
+      $('upload-status').textContent = done ? `사진 ${done}장을 올렸습니다. 아래 [저장하기]를 눌러야 사이트에 반영됩니다.` : '';
+      if (list.length > room) toast('최대 10장까지만 추가되었습니다.', true);
+    }
+
+    $('file-input').addEventListener('change', e => { uploadFiles(e.target.files); e.target.value = ''; });
+    const dz = $('dropzone');
+    ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
+    ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
+    dz.addEventListener('drop', e => uploadFiles(e.dataTransfer.files));
+
+    // ---------- 저장 / 삭제 ----------
+    async function saveAll(next, message) {
+      $('save-btn').disabled = true;
+      try {
+        const data = await api('/api/products', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ products: next })
+        });
+        products = data.products;
+        renderList();
+        toast(message);
+        return true;
+      } catch (err) {
+        toast(err.message, true);
+        return false;
+      } finally {
+        $('save-btn').disabled = uploading > 0;
+      }
+    }
+
+    $('editor').addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!draftImages.length) return toast('사진을 1장 이상 올려주세요.', true);
+
+      const fields = {
+        name: $('f-name').value.trim(),
+        category: $('f-category').value,
+        tag: $('f-tag').value || null,
+        price: Number($('f-price').value) || 0,
+        originalPrice: Number($('f-original').value) || null,
+        summary: $('f-summary').value.trim(),
+        description: $('f-description').value.trim(),
+        options: $('f-options').value.split(',').map(s => s.trim()).filter(Boolean),
+        dimensions: $('f-dimensions').value.trim(),
+        material: $('f-material').value.trim(),
+        rating: Number($('f-rating').value) || 0,
+        reviewCount: Number($('f-reviews').value) || 0,
+        isNew: $('f-new').checked,
+        isPopular: $('f-popular').checked,
+        images: [...draftImages]
+      };
+
+      let next, newId;
+      if (selectedId === 'new') {
+        newId = Math.max(0, ...products.map(p => p.id)) + 1;
+        next = [{ id: newId, ...fields }, ...products];
+      } else {
+        newId = selectedId;
+        next = products.map(p => p.id === selectedId ? { ...p, ...fields } : p);
+      }
+
+      if (await saveAll(next, '저장했습니다. 사이트에 바로 반영됩니다.')) {
+        openEditor(newId);
+      }
+    });
+
+    $('delete-btn').addEventListener('click', async () => {
+      const p = products.find(x => x.id === selectedId);
+      if (!p || !confirm(`"${p.name}" 상품을 삭제할까요?\n삭제하면 되돌릴 수 없습니다.`)) return;
+      if (await saveAll(products.filter(x => x.id !== selectedId), '삭제했습니다.')) closeEditor();
+    });
+
+    start();
+  </script>
+</body>
+</html>

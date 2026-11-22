@@ -1,5 +1,5 @@
 // 감각적인 라이프스타일 셀렉트숍 'ATELIER NOOK (아틀리에 눅)' 상품 데이터베이스
-const PRODUCTS = [
+let PRODUCTS = [
   {
     id: 1,
     name: "페탈 세라믹 화병 (Petal Ceramic Vase)",
