@@ -422,17 +422,7 @@
     </div>
   </footer>
 
-  <!-- ================= FLOATING THEME CUSTOMIZER BUTTON (관리자 로그인 시에만 표시) ================= -->
-  <button 
-    id="theme-trigger-btn"
-    onclick="toggleThemePanel()"
-    class="theme-trigger-btn hidden fixed bottom-6 left-6 z-40 px-4 py-3 bg-stone-900 text-white rounded-full shadow-2xl flex items-center gap-2 text-xs font-medium hover:bg-stone-800 transition-transform hover:scale-105 active:scale-95 border border-stone-700"
-    title="디자인 스타일 변경"
-  >
-    <i data-lucide="palette" class="w-4 h-4 text-amber-400"></i>
-    <span>🎨 디자인 스타일 변경 (관리자)</span>
-  </button>
-
+  <!-- 디자인 스타일 변경 패널은 관리자 화면의 [디자인 스타일 변경] 버튼(/?design=1)으로만 열림 -->
   <!-- ================= THEME CUSTOMIZER DRAWER ================= -->
   <div id="theme-backdrop" onclick="toggleThemePanel()" class="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
   <div id="theme-customizer-drawer" class="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white shadow-2xl z-50 p-6 overflow-y-auto translate-x-full transition-transform duration-300 flex flex-col justify-between">
