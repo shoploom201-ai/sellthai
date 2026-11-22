@@ -100,6 +100,19 @@ body {
   border-color: var(--border-subtle);
 }
 
+/* 모바일: 테두리 없는 카드 + 둥근 사진 (한 화면에 2열 × 2줄) */
+@media (max-width: 639px) {
+  #product-grid .product-card {
+    border: none;
+    background-color: transparent;
+    overflow: visible;
+    border-radius: 0;
+  }
+  #product-grid .product-card .image-container {
+    border-radius: 0.9rem;
+  }
+}
+
 /* 감성적인 이미지 호버 트랜지션 */
 .product-card .image-container {
   overflow: hidden;
