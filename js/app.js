@@ -59,6 +59,43 @@ function updateBadges() {
   }
 }
 
+/* ==========================================================================
+   팝업이 열려 있는 동안 뒷화면 스크롤 고정 (아이폰 Safari 포함)
+   ========================================================================== */
+const OVERLAY_MODAL_IDS = ['quick-modal', 'checkout-modal', 'success-modal', 'lookup-modal', 'wishlist-modal'];
+let lockedScrollY = null;
+
+function anyOverlayOpen() {
+  const modalOpen = OVERLAY_MODAL_IDS.some(id => {
+    const el = document.getElementById(id);
+    return el && !el.classList.contains('hidden');
+  });
+  const cartPanel = document.getElementById('cart-panel');
+  const themePanel = document.getElementById('theme-customizer-drawer');
+  return modalOpen
+    || Boolean(cartPanel && !cartPanel.classList.contains('translate-x-full'))
+    || Boolean(themePanel && !themePanel.classList.contains('translate-x-full'));
+}
+
+function syncScrollLock() {
+  const style = document.body.style;
+  if (anyOverlayOpen()) {
+    if (lockedScrollY !== null) return;
+    lockedScrollY = window.scrollY;
+    style.position = 'fixed';
+    style.top = `-${lockedScrollY}px`;
+    style.left = '0';
+    style.right = '0';
+    style.width = '100%';
+    style.overflow = 'hidden';
+  } else if (lockedScrollY !== null) {
+    const y = lockedScrollY;
+    lockedScrollY = null;
+    style.position = style.top = style.left = style.right = style.width = style.overflow = '';
+    window.scrollTo(0, y);
+  }
+}
+
 // 토스트 알림
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -243,6 +280,7 @@ function toggleThemePanel() {
     panel.classList.remove('translate-x-full');
     backdrop.classList.remove('opacity-0', 'pointer-events-none');
   }
+  syncScrollLock();
 }
 
 /* ==========================================================================
@@ -583,7 +621,7 @@ function openCartDrawer() {
     drawer.classList.remove('pointer-events-none');
     document.getElementById('cart-backdrop').classList.remove('opacity-0');
     document.getElementById('cart-panel').classList.remove('translate-x-full');
-    document.body.style.overflow = 'hidden';
+    syncScrollLock();
   }
 }
 
@@ -594,7 +632,7 @@ function closeCartDrawer() {
     document.getElementById('cart-panel').classList.add('translate-x-full');
     setTimeout(() => {
       drawer.classList.add('pointer-events-none');
-      document.body.style.overflow = '';
+      syncScrollLock();
     }, 300);
   }
 }
@@ -712,7 +750,7 @@ function openQuickView(productId) {
 
   modal.classList.remove('hidden');
   modal.classList.add('flex');
-  document.body.style.overflow = 'hidden';
+  syncScrollLock();
   lucide.createIcons();
 }
 
@@ -744,7 +782,7 @@ function closeQuickView() {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
-    document.body.style.overflow = '';
+    syncScrollLock();
   }
 }
 
@@ -778,7 +816,7 @@ function openCheckoutModal() {
 
   modal.classList.remove('hidden');
   modal.classList.add('flex');
-  document.body.style.overflow = 'hidden';
+  syncScrollLock();
 }
 
 function closeCheckoutModal() {
@@ -786,7 +824,7 @@ function closeCheckoutModal() {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
-    document.body.style.overflow = '';
+    syncScrollLock();
   }
 }
 
@@ -892,7 +930,7 @@ async function processPayment(event) {
     if (successModal) {
       successModal.classList.remove('hidden');
       successModal.classList.add('flex');
-      document.body.style.overflow = 'hidden';
+      syncScrollLock();
       lucide.createIcons();
     }
   } catch (err) {
@@ -919,7 +957,7 @@ function openOrderLookup() {
   } catch {}
   modal.classList.remove('hidden');
   modal.classList.add('flex');
-  document.body.style.overflow = 'hidden';
+  syncScrollLock();
   lucide.createIcons();
 }
 
@@ -928,7 +966,7 @@ function closeOrderLookup() {
   if (!modal) return;
   modal.classList.add('hidden');
   modal.classList.remove('flex');
-  document.body.style.overflow = '';
+  syncScrollLock();
 }
 
 async function lookupOrder(event) {
@@ -973,7 +1011,7 @@ function closeSuccessModal() {
   if (successModal) {
     successModal.classList.add('hidden');
     successModal.classList.remove('flex');
-    document.body.style.overflow = '';
+    syncScrollLock();
   }
 }
 
@@ -1016,7 +1054,7 @@ function openWishlistModal() {
 
   modal.classList.remove('hidden');
   modal.classList.add('flex');
-  document.body.style.overflow = 'hidden';
+  syncScrollLock();
   lucide.createIcons();
 }
 
@@ -1025,7 +1063,7 @@ function closeWishlistModal() {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
-    document.body.style.overflow = '';
+    syncScrollLock();
   }
 }
 
