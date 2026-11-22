@@ -422,14 +422,15 @@
     </div>
   </footer>
 
-  <!-- ================= FLOATING THEME CUSTOMIZER BUTTON ================= -->
+  <!-- ================= FLOATING THEME CUSTOMIZER BUTTON (관리자 로그인 시에만 표시) ================= -->
   <button 
+    id="theme-trigger-btn"
     onclick="toggleThemePanel()"
-    class="theme-trigger-btn fixed bottom-6 left-6 z-40 px-4 py-3 bg-stone-900 text-white rounded-full shadow-2xl flex items-center gap-2 text-xs font-medium hover:bg-stone-800 transition-transform hover:scale-105 active:scale-95 border border-stone-700"
+    class="theme-trigger-btn hidden fixed bottom-6 left-6 z-40 px-4 py-3 bg-stone-900 text-white rounded-full shadow-2xl flex items-center gap-2 text-xs font-medium hover:bg-stone-800 transition-transform hover:scale-105 active:scale-95 border border-stone-700"
     title="디자인 스타일 변경"
   >
     <i data-lucide="palette" class="w-4 h-4 text-amber-400"></i>
-    <span>🎨 디자인 스타일 변경</span>
+    <span>🎨 디자인 스타일 변경 (관리자)</span>
   </button>
 
   <!-- ================= THEME CUSTOMIZER DRAWER ================= -->
@@ -561,7 +562,7 @@
     <!-- 하단 초기화 버튼 -->
     <div class="pt-4 border-t border-stone-200">
       <button 
-        onclick="localStorage.removeItem('atelier_theme_settings'); location.reload();" 
+        onclick="resetThemeSettings()" 
         class="w-full py-2.5 text-xs text-stone-500 hover:text-stone-900 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
       >
         기본 설정으로 되돌리기
