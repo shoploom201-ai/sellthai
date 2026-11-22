@@ -8,15 +8,19 @@ const STATE = {
   sortBy: 'popular',
   quickViewProduct: null,
   selectedOption: '',
-  // 디자인 테마 설정
-  themeSettings: JSON.parse(localStorage.getItem('atelier_theme_settings')) || {
-    theme: 'default',
-    radius: 'rounded-xl',
-    gridCols: 4,
-    brandName: 'ATELIER NOOK',
-    heroTitle: 'Form follows soul.'
-  }
+  // 디자인 테마 설정 (서버에 저장된 값을 불러옴. 관리자만 변경 가능)
+  themeSettings: null,
+  isAdmin: false
 };
+
+const DEFAULT_THEME_SETTINGS = {
+  theme: 'default',
+  radius: 'medium',
+  gridCols: 4,
+  brandName: 'ATELIER NOOK',
+  heroTitle: ''
+};
+STATE.themeSettings = { ...DEFAULT_THEME_SETTINGS };
 
 const FREE_SHIPPING_THRESHOLD = 50000;
 const SHIPPING_FEE = 3000;
@@ -30,7 +34,6 @@ function formatPrice(number) {
 function saveState() {
   localStorage.setItem('atelier_cart', JSON.stringify(STATE.cart));
   localStorage.setItem('atelier_wishlist', JSON.stringify(STATE.wishlist));
-  localStorage.setItem('atelier_theme_settings', JSON.stringify(STATE.themeSettings));
   updateBadges();
 }
 
@@ -117,15 +120,68 @@ function applySavedTheme() {
   if (brandName) {
     document.querySelectorAll('.brand-logo-text').forEach(el => el.textContent = brandName);
   }
-  if (heroTitle) {
-    const heroTitleEl = document.getElementById('hero-title-main');
-    if (heroTitleEl) heroTitleEl.innerHTML = heroTitle;
+  const heroTitleEl = document.getElementById('hero-title-main');
+  if (heroTitleEl) {
+    if (!heroTitleEl.dataset.original) heroTitleEl.dataset.original = heroTitleEl.innerHTML;
+    if (heroTitle) heroTitleEl.textContent = heroTitle;
+    else heroTitleEl.innerHTML = heroTitleEl.dataset.original;
   }
+}
+
+// 관리자가 바꾼 디자인 설정을 서버에 저장 (모든 방문자에게 적용)
+let themeSaveTimer = null;
+function saveThemeSettings() {
+  if (!STATE.isAdmin) return;
+  clearTimeout(themeSaveTimer);
+  themeSaveTimer = setTimeout(async () => {
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: STATE.themeSettings })
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      showToast('디자인 설정 저장에 실패했습니다. 관리자 로그인을 확인해 주세요.', 'info');
+    }
+  }, 400);
+}
+
+function resetThemeSettings() {
+  STATE.themeSettings = { ...DEFAULT_THEME_SETTINGS };
+  applySavedTheme();
+  saveThemeSettings();
+  showToast('기본 디자인으로 되돌렸습니다.', 'theme');
+}
+
+// 저장된 디자인 설정 불러오기 + 관리자면 '디자인 스타일 변경' 버튼 표시
+async function loadSiteSettings() {
+  try {
+    const res = await fetch('/api/settings', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.settings) {
+        STATE.themeSettings = { ...DEFAULT_THEME_SETTINGS, ...data.settings };
+        applySavedTheme();
+      }
+    }
+  } catch {}
+
+  try {
+    const res = await fetch('/api/me', { cache: 'no-store', credentials: 'same-origin' });
+    const me = res.ok ? await res.json() : {};
+    STATE.isAdmin = Boolean(me.loggedIn);
+  } catch {}
+
+  const trigger = document.getElementById('theme-trigger-btn');
+  if (trigger) trigger.classList.toggle('hidden', !STATE.isAdmin);
+  if (STATE.isAdmin && new URLSearchParams(location.search).has('design')) toggleThemePanel();
 }
 
 function selectTheme(themeName) {
   STATE.themeSettings.theme = themeName;
-  saveState();
+  saveThemeSettings();
   applySavedTheme();
   showToast(`'${getThemeNameKR(themeName)}' 스타일이 적용되었습니다.`, 'theme');
 
@@ -139,14 +195,14 @@ function selectTheme(themeName) {
 
 function selectRadius(radiusType) {
   STATE.themeSettings.radius = radiusType;
-  saveState();
+  saveThemeSettings();
   applySavedTheme();
   showToast('카드 모서리 형태가 변경되었습니다.', 'theme');
 }
 
 function selectGridCols(cols) {
   STATE.themeSettings.gridCols = cols;
-  saveState();
+  saveThemeSettings();
   applySavedTheme();
   showToast(`${cols}열 그리드로 변경되었습니다.`, 'theme');
 }
@@ -154,14 +210,14 @@ function selectGridCols(cols) {
 function updateBrandText(input) {
   const val = input.value.trim() || 'ATELIER NOOK';
   STATE.themeSettings.brandName = val;
-  saveState();
+  saveThemeSettings();
   applySavedTheme();
 }
 
 function updateHeroTitle(input) {
-  const val = input.value.trim() || 'Form follows soul.';
+  const val = input.value.trim();
   STATE.themeSettings.heroTitle = val;
-  saveState();
+  saveThemeSettings();
   applySavedTheme();
 }
 
@@ -176,6 +232,7 @@ function getThemeNameKR(name) {
 }
 
 function toggleThemePanel() {
+  if (!STATE.isAdmin) return;
   const panel = document.getElementById('theme-customizer-drawer');
   const backdrop = document.getElementById('theme-backdrop');
   if (!panel) return;
@@ -876,4 +933,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   lucide.createIcons();
   loadSavedProducts();
+  loadSiteSettings();
 });
