@@ -839,6 +839,22 @@ function toggleMobileMenu() {
   }
 }
 
+// 관리자 모드에서 저장한 상품 목록 불러오기 (없거나 실패하면 data.js 기본 상품 사용)
+async function loadSavedProducts() {
+  try {
+    const res = await fetch('/api/products', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data.products)) {
+      PRODUCTS = data.products;
+      renderProducts();
+      updateBadges();
+    }
+  } catch {
+    // 로컬 파일로 열었거나 서버가 없을 때는 기본 상품 그대로
+  }
+}
+
 // 초기화
 document.addEventListener('DOMContentLoaded', () => {
   applySavedTheme();
@@ -858,4 +874,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   lucide.createIcons();
+  loadSavedProducts();
 });

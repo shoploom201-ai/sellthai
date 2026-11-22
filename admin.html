@@ -343,14 +343,21 @@
       if (first) {
         const [img] = draftImages.splice(Number(first.dataset.imgFirst), 1);
         draftImages.unshift(img);
-        return renderImages();
+        renderImages();
+        return autoSaveImages('대표 사진을 바꿨습니다. 사이트에 바로 반영됐습니다.');
       }
       const remove = e.target.closest('[data-img-remove]');
       if (remove) {
         draftImages.splice(Number(remove.dataset.imgRemove), 1);
         renderImages();
+        autoSaveImages('사진을 삭제했습니다. 사이트에 바로 반영됐습니다.');
       }
     });
+
+    // 이미 저장된 상품의 사진 변경은 바로 반영
+    function autoSaveImages(message) {
+      if (selectedId !== 'new' && uploading === 0 && canAutoSave()) saveEditor(message);
+    }
 
     // ---------- 사진 업로드 ----------
     // 큰 사진은 브라우저에서 줄여서 올림 (빠르고 용량 절약)
@@ -398,8 +405,25 @@
       }
       uploading--;
       $('save-btn').disabled = uploading > 0;
-      $('upload-status').textContent = done ? `사진 ${done}장을 올렸습니다. 아래 [저장하기]를 눌러야 사이트에 반영됩니다.` : '';
       if (list.length > room) toast('최대 10장까지만 추가되었습니다.', true);
+      if (!done) return void ($('upload-status').textContent = '');
+
+      // 업로드가 끝나면 바로 저장해서 사이트에 즉시 반영
+      if (uploading === 0 && canAutoSave()) {
+        $('upload-status').textContent = `사진 ${done}장을 올렸습니다. 사이트에 반영하는 중...`;
+        const ok = await saveEditor(`사진 ${done}장을 올렸습니다. 사이트에 바로 반영됐습니다.`);
+        $('upload-status').textContent = ok ? `사진 ${done}장을 올리고 사이트에 반영했습니다.` : '사이트 반영에 실패했습니다. [저장하기]를 다시 눌러주세요.';
+      } else {
+        $('upload-status').textContent = `사진 ${done}장을 올렸습니다. 상품명과 판매가를 입력한 뒤 [저장하기]를 누르면 사이트에 반영됩니다.`;
+      }
+    }
+
+    // 상품명·판매가가 채워져 있으면 자동 저장 가능
+    function canAutoSave() {
+      return !$('editor').classList.contains('hidden')
+        && $('f-name').value.trim() !== ''
+        && $('f-price').value !== ''
+        && draftImages.length > 0;
     }
 
     $('file-input').addEventListener('change', e => { uploadFiles(e.target.files); e.target.value = ''; });
@@ -432,7 +456,11 @@
     $('editor').addEventListener('submit', async e => {
       e.preventDefault();
       if (!draftImages.length) return toast('사진을 1장 이상 올려주세요.', true);
+      await saveEditor('저장했습니다. 사이트에 바로 반영됩니다.');
+    });
 
+    // 편집 중인 상품을 저장 (새 상품이면 추가)
+    async function saveEditor(message) {
       const fields = {
         name: $('f-name').value.trim(),
         category: $('f-category').value,
@@ -460,10 +488,12 @@
         next = products.map(p => p.id === selectedId ? { ...p, ...fields } : p);
       }
 
-      if (await saveAll(next, '저장했습니다. 사이트에 바로 반영됩니다.')) {
+      if (await saveAll(next, message)) {
         openEditor(newId);
+        return true;
       }
-    });
+      return false;
+    }
 
     $('delete-btn').addEventListener('click', async () => {
       const p = products.find(x => x.id === selectedId);
