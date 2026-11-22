@@ -73,6 +73,7 @@
         <a href="#collection" onclick="setCategory('lighting')" class="hover:text-stone-950 transition-colors">조명</a>
         <a href="#collection" onclick="setCategory('fabric')" class="hover:text-stone-950 transition-colors">패브릭</a>
         <a href="#editorial" class="hover:text-stone-950 transition-colors">스토리</a>
+        <a href="#" onclick="event.preventDefault(); openOrderLookup()" class="hover:text-stone-950 transition-colors">주문조회</a>
       </nav>
 
       <!-- 유틸리티 아이콘 영역 -->
@@ -108,6 +109,7 @@
       <a href="#collection" onclick="setCategory('lighting'); toggleMobileMenu()" class="block py-1 text-stone-600">조명 & 라이팅</a>
       <a href="#collection" onclick="setCategory('fabric'); toggleMobileMenu()" class="block py-1 text-stone-600">패브릭 & 베딩</a>
       <a href="#editorial" onclick="toggleMobileMenu()" class="block py-1 text-stone-600">브랜드 스토리</a>
+      <a href="#" onclick="event.preventDefault(); toggleMobileMenu(); openOrderLookup()" class="block py-1 text-stone-600">주문 조회</a>
     </div>
   </header>
 
@@ -393,6 +395,7 @@
             고객센터: <span class="text-white font-medium">02-1234-5678</span><br />
             문의메일: <span class="text-white font-medium">help@ateliernook.com</span>
           </p>
+          <button type="button" onclick="openOrderLookup()" class="mt-3 px-3 py-1.5 border border-stone-600 rounded-lg text-xs text-stone-200 hover:bg-stone-800">주문 조회</button>
         </div>
 
         <div>
@@ -654,49 +657,43 @@
         </div>
       </div>
 
-      <form onsubmit="processPayment(event)" class="space-y-4">
+      <form id="checkout-form" onsubmit="processPayment(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-stone-700 mb-1">받는 분 성함</label>
-          <input type="text" required placeholder="받는 분 성함" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-xs focus:ring-1 focus:ring-stone-900 focus:outline-none" />
+          <label class="block text-xs font-semibold text-stone-700 mb-1" for="co-name">받는 분 성함</label>
+          <input id="co-name" type="text" required maxlength="30" autocomplete="name" placeholder="받는 분 성함" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-stone-700 mb-1">연락처</label>
-          <input type="tel" required placeholder="010-0000-0000" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-xs focus:ring-1 focus:ring-stone-900 focus:outline-none" />
+          <label class="block text-xs font-semibold text-stone-700 mb-1" for="co-phone">연락처</label>
+          <input id="co-phone" type="tel" required maxlength="15" autocomplete="tel" inputmode="tel" placeholder="010-0000-0000" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-stone-700 mb-1">배송지 주소</label>
-          <input type="text" required placeholder="기본 주소" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-xs focus:ring-1 focus:ring-stone-900 focus:outline-none mb-1.5" />
-          <input type="text" placeholder="상세주소" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-xs focus:ring-1 focus:ring-stone-900 focus:outline-none" />
+          <label class="block text-xs font-semibold text-stone-700 mb-1" for="co-address">배송지 주소</label>
+          <input id="co-address" type="text" required maxlength="200" autocomplete="street-address" placeholder="기본 주소" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none mb-1.5" />
+          <input id="co-address-detail" type="text" maxlength="100" placeholder="상세주소" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1" for="co-memo">배송 메모 <span class="font-normal text-stone-400">(선택)</span></label>
+          <input id="co-memo" type="text" maxlength="200" placeholder="예: 문 앞에 놓아주세요" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-stone-700 mb-2">결제 수단</label>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <label class="flex items-center gap-2 p-2.5 border border-stone-900 rounded-lg cursor-pointer bg-stone-50 font-medium text-stone-900">
-              <input type="radio" name="payment-method" checked class="text-stone-900 focus:ring-stone-900" />
-              <span>신용/체크카드</span>
-            </label>
-            <label class="flex items-center gap-2 p-2.5 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50 text-stone-700">
-              <input type="radio" name="payment-method" class="text-stone-900 focus:ring-stone-900" />
-              <span>네이버페이</span>
-            </label>
-            <label class="flex items-center gap-2 p-2.5 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50 text-stone-700">
-              <input type="radio" name="payment-method" class="text-stone-900 focus:ring-stone-900" />
-              <span>카카오페이</span>
-            </label>
-            <label class="flex items-center gap-2 p-2.5 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50 text-stone-700">
-              <input type="radio" name="payment-method" class="text-stone-900 focus:ring-stone-900" />
-              <span>무통장 입금</span>
-            </label>
+          <span class="block text-xs font-semibold text-stone-700 mb-2">결제 수단</span>
+          <div class="p-3 border border-stone-900 rounded-lg bg-stone-50 text-xs">
+            <div class="font-semibold text-stone-900 mb-2">무통장 입금</div>
+            <div id="co-bank-info" class="text-stone-600 leading-relaxed">입금 계좌 정보를 불러오는 중...</div>
           </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1" for="co-depositor">입금자명 <span class="font-normal text-stone-400">(받는 분과 다를 때만 입력)</span></label>
+          <input id="co-depositor" type="text" maxlength="30" placeholder="입금자명" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none" />
         </div>
 
         <button 
           id="pay-submit-btn"
           type="submit" 
-          class="w-full mt-4 py-3.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-stone-800 transition-colors shadow-sm"
+          class="w-full mt-4 py-3.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-stone-800 transition-colors shadow-sm disabled:opacity-50"
         >
-          결제하기
+          주문하기
         </button>
       </form>
     </div>
@@ -705,20 +702,44 @@
   <!-- ================= PAYMENT SUCCESS MODAL ================= -->
   <div id="success-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div onclick="closeSuccessModal()" class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"></div>
-    <div class="relative bg-white rounded-2xl max-w-sm w-full p-8 text-center shadow-2xl z-10 animate-fade-in">
+    <div class="relative bg-white rounded-2xl max-w-sm w-full p-8 text-center shadow-2xl z-10 animate-fade-in max-h-[90vh] overflow-y-auto">
       <div class="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4">
         <i data-lucide="check" class="w-7 h-7"></i>
       </div>
-      <h3 class="font-serif text-2xl font-medium text-stone-900 mb-2">주문이 완료되었습니다</h3>
-      <p class="text-xs text-stone-500 leading-relaxed mb-6">
-        소중한 오브제가 정성스러운 손길로 포장되어 안전하게 배송될 예정입니다.
+      <h3 class="font-serif text-2xl font-medium text-stone-900 mb-2">주문이 접수되었습니다</h3>
+      <p class="text-xs text-stone-500 leading-relaxed mb-4">
+        아래 계좌로 입금해 주시면 확인 후 정성껏 포장해 보내드립니다.
       </p>
+      <div id="success-details" class="text-left text-xs bg-stone-50 border border-stone-200 rounded-xl p-4 mb-6 space-y-1.5"></div>
       <button 
         onclick="closeSuccessModal()" 
         class="w-full py-3 bg-stone-900 text-white rounded-xl text-xs font-medium hover:bg-stone-800"
       >
         확인 및 쇼핑 계속하기
       </button>
+    </div>
+  </div>
+
+  <!-- ================= ORDER LOOKUP MODAL ================= -->
+  <div id="lookup-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div onclick="closeOrderLookup()" class="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"></div>
+    <div class="relative bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+      <button onclick="closeOrderLookup()" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800" aria-label="닫기">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <h3 class="font-serif text-xl font-medium text-stone-900 mb-4 pb-2 border-b border-stone-200">주문 조회</h3>
+      <form onsubmit="lookupOrder(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1" for="lk-id">주문번호</label>
+          <input id="lk-id" type="text" required placeholder="예: 261122-AB3CD5" autocapitalize="characters" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 mb-1" for="lk-phone">주문 시 입력한 연락처</label>
+          <input id="lk-phone" type="tel" required inputmode="tel" placeholder="010-0000-0000" class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-900 focus:outline-none" />
+        </div>
+        <button type="submit" class="w-full py-3 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-stone-800">조회하기</button>
+      </form>
+      <div id="lookup-result" class="mt-5"></div>
     </div>
   </div>
 

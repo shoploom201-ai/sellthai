@@ -51,16 +51,58 @@
   <section id="admin-view" class="hidden">
     <header class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-stone-200">
       <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-        <div class="font-bold">ATELIER NOOK <span class="text-stone-400 font-normal">관리자</span></div>
-        <div class="flex items-center gap-2">
-          <a href="/?design=1" target="_blank" class="text-sm px-3 py-2 rounded-lg hover:bg-stone-100">디자인 스타일 변경</a>
-          <a href="/" target="_blank" class="text-sm px-3 py-2 rounded-lg hover:bg-stone-100">사이트 보기</a>
-          <button id="logout-btn" class="text-sm px-3 py-2 rounded-lg hover:bg-stone-100">로그아웃</button>
+        <div class="font-bold whitespace-nowrap text-sm sm:text-base">ATELIER NOOK <span class="text-stone-400 font-normal">관리자</span></div>
+        <div class="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+          <a href="/?design=1" target="_blank" class="px-2 sm:px-3 py-2 rounded-lg hover:bg-stone-100">디자인<span class="hidden sm:inline"> 스타일 변경</span></a>
+          <a href="/" target="_blank" class="px-2 sm:px-3 py-2 rounded-lg hover:bg-stone-100">사이트<span class="hidden sm:inline"> 보기</span></a>
+          <button id="logout-btn" class="px-2 sm:px-3 py-2 rounded-lg hover:bg-stone-100">로그아웃</button>
         </div>
       </div>
+      <nav class="max-w-6xl mx-auto px-4 flex gap-1 text-sm overflow-x-auto">
+        <button type="button" data-tab="products" class="tab-btn px-4 py-2.5 border-b-2 font-semibold whitespace-nowrap">상품 관리</button>
+        <button type="button" data-tab="orders" class="tab-btn px-4 py-2.5 border-b-2 font-semibold whitespace-nowrap">주문 관리 <span id="pending-badge" class="hidden ml-1 px-1.5 py-0.5 rounded-full bg-red-600 text-white text-[11px]"></span></button>
+        <button type="button" data-tab="bank" class="tab-btn px-4 py-2.5 border-b-2 font-semibold whitespace-nowrap">입금 계좌</button>
+      </nav>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-6 grid gap-6 lg:grid-cols-[320px_1fr]">
+    <!-- 주문 관리 -->
+    <main id="tab-orders" class="hidden max-w-6xl mx-auto px-4 py-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div id="order-filters" class="flex flex-wrap gap-2 text-sm"></div>
+        <button type="button" id="orders-refresh" class="text-sm px-3 py-2 rounded-lg border border-stone-300 bg-white hover:bg-stone-100">새로고침</button>
+      </div>
+      <p class="text-xs text-stone-500 mb-4">흐름: <b>입금대기</b> → [입금 확인] → <b>입금확인</b> → 택배사·송장번호 입력 후 [배송 시작] → <b>배송중</b> → [배송 완료] → <b>배송완료</b></p>
+      <div id="order-list" class="space-y-3"></div>
+    </main>
+
+    <!-- 입금 계좌 설정 -->
+    <main id="tab-bank" class="hidden max-w-xl mx-auto px-4 py-6">
+      <form id="bank-form" class="bg-white rounded-2xl border border-stone-200 p-6 space-y-4">
+        <div>
+          <h2 class="font-bold mb-1">무통장 입금 계좌</h2>
+          <p class="text-sm text-stone-500">주문 화면과 주문 완료 화면에 손님에게 안내되는 계좌입니다. 계좌를 저장해야 주문을 받을 수 있습니다.</p>
+        </div>
+        <div>
+          <label class="label" for="b-bank">은행명 *</label>
+          <input id="b-bank" class="field" maxlength="30" placeholder="예: 국민은행" required />
+        </div>
+        <div>
+          <label class="label" for="b-account">계좌번호 *</label>
+          <input id="b-account" class="field" maxlength="40" inputmode="numeric" placeholder="예: 123456-01-123456" required />
+        </div>
+        <div>
+          <label class="label" for="b-holder">예금주 *</label>
+          <input id="b-holder" class="field" maxlength="30" required />
+        </div>
+        <div>
+          <label class="label" for="b-days">입금 기한 (일)</label>
+          <input id="b-days" type="number" min="1" max="14" class="field" value="3" />
+        </div>
+        <button class="w-full bg-stone-900 text-white rounded-lg py-3 font-semibold hover:bg-stone-700">저장하기</button>
+      </form>
+    </main>
+
+    <main id="tab-products" class="max-w-6xl mx-auto px-4 py-6 grid gap-6 lg:grid-cols-[320px_1fr]">
       <!-- 상품 목록 -->
       <aside>
         <div class="flex items-center justify-between mb-3">
@@ -233,6 +275,13 @@
       showView('admin');
       renderList();
       closeEditor();
+      let tab = 'products';
+      try { tab = sessionStorage.getItem('admin_tab') || 'products'; } catch {}
+      showTab(tab);
+      if (tab !== 'orders') {
+        // 처리할 주문 수 뱃지
+        api('/api/orders').then(d => { orders = d.orders || []; updatePendingBadge(); }).catch(() => {});
+      }
     }
 
     // ---------- 로그인 ----------
@@ -442,6 +491,228 @@
     ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
     ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
     dz.addEventListener('drop', e => uploadFiles(e.dataTransfer.files));
+
+    // ---------- 탭 ----------
+    let currentTab = 'products';
+    function showTab(name) {
+      currentTab = name;
+      for (const t of ['products', 'orders', 'bank']) {
+        $(`tab-${t}`).classList.toggle('hidden', t !== name);
+      }
+      $('tab-products').classList.toggle('grid', name === 'products');
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        const on = b.dataset.tab === name;
+        b.classList.toggle('border-stone-900', on);
+        b.classList.toggle('text-stone-900', on);
+        b.classList.toggle('border-transparent', !on);
+        b.classList.toggle('text-stone-400', !on);
+      });
+      try { sessionStorage.setItem('admin_tab', name); } catch {}
+      if (name === 'orders') loadOrders();
+      if (name === 'bank') loadBank();
+    }
+    document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+    // ---------- 주문 관리 ----------
+    const STATUS = {
+      pending: { label: '입금대기', cls: 'bg-amber-100 text-amber-800' },
+      paid: { label: '입금확인', cls: 'bg-blue-100 text-blue-800' },
+      shipping: { label: '배송중', cls: 'bg-violet-100 text-violet-800' },
+      delivered: { label: '배송완료', cls: 'bg-emerald-100 text-emerald-800' },
+      cancelled: { label: '주문취소', cls: 'bg-stone-200 text-stone-600' }
+    };
+    const COURIERS = ['CJ대한통운', '우체국택배', '한진택배', '롯데택배', '로젠택배', '경동택배', '대신택배', '일양로지스', 'GS편의점택배', 'CU편의점택배'];
+    let orders = [];
+    let orderFilter = 'pending';
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return isNaN(d) ? '' : d.toLocaleString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatPhone(p) {
+      const d = String(p || '');
+      if (d.length === 11) return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+      if (d.length === 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+      return d;
+    }
+
+    async function loadOrders() {
+      $('order-list').innerHTML = '<p class="text-sm text-stone-500">불러오는 중...</p>';
+      try {
+        const data = await api('/api/orders');
+        orders = data.orders || [];
+        renderOrders();
+      } catch (err) {
+        $('order-list').innerHTML = `<p class="text-sm text-red-700">${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    function updatePendingBadge() {
+      const n = orders.filter(o => o.status === 'pending' || o.status === 'paid').length;
+      $('pending-badge').textContent = n;
+      $('pending-badge').classList.toggle('hidden', n === 0);
+    }
+
+    function renderOrders() {
+      updatePendingBadge();
+      const counts = Object.fromEntries(Object.keys(STATUS).map(k => [k, orders.filter(o => o.status === k).length]));
+      const filters = [['all', '전체', orders.length], ...Object.entries(STATUS).map(([k, v]) => [k, v.label, counts[k]])];
+      $('order-filters').innerHTML = filters.map(([k, label, n]) => `
+        <button type="button" data-filter="${k}" class="px-3 py-1.5 rounded-full border ${orderFilter === k ? 'bg-stone-900 text-white border-stone-900' : 'bg-white border-stone-300 text-stone-700 hover:bg-stone-100'}">${label} <span class="opacity-70">${n}</span></button>`).join('');
+
+      const list = orderFilter === 'all' ? orders : orders.filter(o => o.status === orderFilter);
+      if (!list.length) {
+        $('order-list').innerHTML = '<div class="bg-white rounded-2xl border border-stone-200 p-10 text-center text-stone-500 text-sm">해당하는 주문이 없습니다.</div>';
+        return;
+      }
+
+      $('order-list').innerHTML = list.map(o => {
+        const st = STATUS[o.status] || STATUS.pending;
+        const c = o.customer || {};
+        const depositorDiff = c.depositor && c.depositor !== c.name;
+        const courierOptions = COURIERS.map(x => `<option ${o.courier === x ? 'selected' : ''}>${x}</option>`).join('');
+        const trackingForm = (btnLabel, action) => `
+          <div class="flex flex-wrap gap-2 items-center">
+            <select data-courier class="field !w-auto !py-2 text-sm"><option value="">택배사 선택</option>${courierOptions}</select>
+            <input data-tracking class="field !w-auto flex-1 min-w-[10rem] !py-2 text-sm" inputmode="numeric" placeholder="송장번호" value="${escapeHtml(o.trackingNumber || '')}" />
+            <button type="button" data-action="${action}" data-id="${o.id}" class="px-4 py-2 rounded-lg bg-stone-900 text-white text-sm font-semibold hover:bg-stone-700">${btnLabel}</button>
+          </div>`;
+
+        let actions = '';
+        if (o.status === 'pending') {
+          actions = `
+            <button type="button" data-action="confirm" data-id="${o.id}" class="px-4 py-2 rounded-lg bg-stone-900 text-white text-sm font-semibold hover:bg-stone-700">입금 확인</button>
+            <button type="button" data-action="cancel" data-id="${o.id}" class="px-3 py-2 rounded-lg text-sm text-red-700 hover:bg-red-50">주문 취소</button>`;
+        } else if (o.status === 'paid') {
+          actions = trackingForm('배송 시작', 'ship') + `
+            <div class="flex gap-2">
+              <button type="button" data-action="back" data-id="${o.id}" class="px-3 py-2 rounded-lg text-sm text-stone-500 hover:bg-stone-100">입금대기로 되돌리기</button>
+              <button type="button" data-action="cancel" data-id="${o.id}" class="px-3 py-2 rounded-lg text-sm text-red-700 hover:bg-red-50">주문 취소</button>
+            </div>`;
+        } else if (o.status === 'shipping') {
+          actions = `
+            <button type="button" data-action="deliver" data-id="${o.id}" class="px-4 py-2 rounded-lg bg-stone-900 text-white text-sm font-semibold hover:bg-stone-700">배송 완료</button>
+            <details class="w-full"><summary class="text-sm text-stone-500 cursor-pointer py-1">송장 정보 수정 / 되돌리기</summary>
+              <div class="pt-2 space-y-2">${trackingForm('송장 수정', 'tracking')}
+                <button type="button" data-action="back" data-id="${o.id}" class="px-3 py-2 rounded-lg text-sm text-stone-500 hover:bg-stone-100">입금확인으로 되돌리기</button>
+              </div>
+            </details>`;
+        } else if (o.status === 'delivered') {
+          actions = `<button type="button" data-action="back" data-id="${o.id}" class="px-3 py-2 rounded-lg text-sm text-stone-500 hover:bg-stone-100">배송중으로 되돌리기</button>`;
+        } else if (o.status === 'cancelled') {
+          actions = `<button type="button" data-action="back" data-id="${o.id}" class="px-3 py-2 rounded-lg text-sm text-stone-500 hover:bg-stone-100">취소 되돌리기</button>`;
+        }
+
+        return `
+          <article class="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5" data-order="${o.id}">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${st.cls}">${st.label}</span>
+                <b class="select-all">${escapeHtml(o.id)}</b>
+              </div>
+              <span class="text-xs text-stone-500">${formatDate(o.createdAt)}</span>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4 text-sm">
+              <div class="space-y-1 min-w-0 break-words">
+                <div><span class="text-stone-400 w-16 inline-block">받는 분</span> <b>${escapeHtml(c.name)}</b></div>
+                <div><span class="text-stone-400 w-16 inline-block">연락처</span> <a href="tel:${escapeHtml(c.phone)}" class="underline">${escapeHtml(formatPhone(c.phone))}</a></div>
+                <div><span class="text-stone-400 w-16 inline-block">주소</span> ${escapeHtml(c.address)} ${escapeHtml(c.addressDetail)}</div>
+                ${c.memo ? `<div><span class="text-stone-400 w-16 inline-block">메모</span> ${escapeHtml(c.memo)}</div>` : ''}
+                <div><span class="text-stone-400 w-16 inline-block">입금자명</span> <b class="${depositorDiff ? 'text-amber-700' : ''}">${escapeHtml(c.depositor || c.name)}</b></div>
+                ${o.trackingNumber ? `<div><span class="text-stone-400 w-16 inline-block">송장</span> ${escapeHtml(o.courier)} <b class="select-all">${escapeHtml(o.trackingNumber)}</b></div>` : ''}
+              </div>
+              <div class="bg-stone-50 rounded-xl p-3 space-y-1 min-w-0">
+                ${(o.items || []).map(i => `<div class="flex justify-between gap-2"><span class="truncate">${escapeHtml(i.name)} <span class="text-stone-400">(${escapeHtml(i.option)})</span> × ${i.quantity}</span><span class="shrink-0">${formatPrice(i.price * i.quantity)}</span></div>`).join('')}
+                ${o.shipping ? `<div class="flex justify-between text-stone-500"><span>배송비</span><span>${formatPrice(o.shipping)}</span></div>` : ''}
+                <div class="flex justify-between pt-1 border-t border-stone-200 font-bold"><span>입금할 금액</span><span>${formatPrice(o.total)}</span></div>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-stone-100">${actions}</div>
+          </article>`;
+      }).join('');
+    }
+
+    $('order-filters').addEventListener('click', e => {
+      const b = e.target.closest('[data-filter]');
+      if (!b) return;
+      orderFilter = b.dataset.filter;
+      renderOrders();
+    });
+    $('orders-refresh').addEventListener('click', loadOrders);
+
+    const ACTION_MESSAGES = {
+      confirm: ['입금 확인 처리할까요?', '입금확인으로 변경했습니다.'],
+      ship: [null, '배송중으로 변경했습니다.'],
+      tracking: [null, '송장 정보를 수정했습니다.'],
+      deliver: ['배송 완료 처리할까요?', '배송완료로 변경했습니다.'],
+      cancel: ['이 주문을 취소할까요?', '주문을 취소했습니다.'],
+      back: ['이전 단계로 되돌릴까요?', '이전 단계로 되돌렸습니다.']
+    };
+
+    $('order-list').addEventListener('click', async e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      const [question, done] = ACTION_MESSAGES[action];
+      const payload = { action };
+
+      if (action === 'ship' || action === 'tracking') {
+        const box = btn.parentElement;
+        payload.courier = box.querySelector('[data-courier]').value;
+        payload.trackingNumber = box.querySelector('[data-tracking]').value.trim();
+        if (!payload.courier || !payload.trackingNumber) return toast('택배사와 송장번호를 입력해 주세요.', true);
+      }
+      if (question && !confirm(question)) return;
+
+      btn.disabled = true;
+      try {
+        const data = await api(`/api/orders/${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        orders = orders.map(o => o.id === id ? data.order : o);
+        renderOrders();
+        toast(done);
+      } catch (err) {
+        toast(err.message, true);
+        btn.disabled = false;
+      }
+    });
+
+    // ---------- 입금 계좌 ----------
+    async function loadBank() {
+      try {
+        const { bank } = await api('/api/payment-settings');
+        $('b-bank').value = bank.bankName || '';
+        $('b-account').value = bank.accountNumber || '';
+        $('b-holder').value = bank.accountHolder || '';
+        $('b-days').value = bank.depositDays || 3;
+      } catch (err) {
+        toast(err.message, true);
+      }
+    }
+
+    $('bank-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      try {
+        await api('/api/payment-settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bankName: $('b-bank').value,
+            accountNumber: $('b-account').value,
+            accountHolder: $('b-holder').value,
+            depositDays: Number($('b-days').value) || 3
+          })
+        });
+        toast('입금 계좌를 저장했습니다. 이제 주문을 받을 수 있습니다.');
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
 
     // ---------- 저장 / 삭제 ----------
     async function saveAll(next, message) {

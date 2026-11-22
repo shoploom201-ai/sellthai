@@ -774,6 +774,8 @@ function openCheckoutModal() {
     totalAmountEl.textContent = formatPrice(total);
   }
 
+  loadBankInfo();
+
   modal.classList.remove('hidden');
   modal.classList.add('flex');
   document.body.style.overflow = 'hidden';
@@ -788,33 +790,182 @@ function closeCheckoutModal() {
   }
 }
 
-function processPayment(event) {
+/* ==========================================================================
+   무통장 입금 주문 / 주문 조회
+   ========================================================================== */
+
+const ORDER_STATUS_LABELS = {
+  pending: '입금대기',
+  paid: '입금확인',
+  shipping: '배송중',
+  delivered: '배송완료',
+  cancelled: '주문취소'
+};
+
+let BANK_INFO = null;
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function bankReady(bank) {
+  return Boolean(bank && bank.bankName && bank.accountNumber && bank.accountHolder);
+}
+
+function bankInfoHtml(bank, amount) {
+  return `
+    <div><span class="text-stone-400">입금 은행</span> <b class="text-stone-900">${escapeHtml(bank.bankName)}</b></div>
+    <div><span class="text-stone-400">계좌번호</span> <b class="text-stone-900 select-all">${escapeHtml(bank.accountNumber)}</b></div>
+    <div><span class="text-stone-400">예금주</span> <b class="text-stone-900">${escapeHtml(bank.accountHolder)}</b></div>
+    ${amount != null ? `<div><span class="text-stone-400">입금 금액</span> <b class="text-amber-800">${formatPrice(amount)}</b></div>` : ''}
+    <div class="text-stone-500 pt-1">주문 후 ${Number(bank.depositDays) || 3}일 이내에 입금해 주세요. 입금이 확인되면 배송을 준비합니다.</div>`;
+}
+
+async function loadBankInfo() {
+  const box = document.getElementById('co-bank-info');
+  const btn = document.getElementById('pay-submit-btn');
+  try {
+    const res = await fetch('/api/payment-settings', { cache: 'no-store' });
+    const data = await res.json();
+    BANK_INFO = data.bank;
+  } catch {
+    BANK_INFO = null;
+  }
+  const ready = bankReady(BANK_INFO);
+  if (box) {
+    box.innerHTML = ready
+      ? bankInfoHtml(BANK_INFO, null)
+      : '<span class="text-red-700">현재 주문을 받을 수 없습니다. (입금 계좌 준비 중) 고객센터로 문의해 주세요.</span>';
+  }
+  if (btn) btn.disabled = !ready;
+}
+
+async function processPayment(event) {
   event.preventDefault();
-  
   const submitBtn = document.getElementById('pay-submit-btn');
+  const val = id => (document.getElementById(id)?.value || '').trim();
+
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `결제 진행 중...`;
+    submitBtn.textContent = '주문 접수 중...';
   }
 
-  setTimeout(() => {
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: STATE.cart.map(item => ({ id: item.id, option: item.option, quantity: item.quantity })),
+        customer: {
+          name: val('co-name'),
+          phone: val('co-phone'),
+          address: val('co-address'),
+          addressDetail: val('co-address-detail'),
+          memo: val('co-memo'),
+          depositor: val('co-depositor')
+        }
+      })
+    });
+    let data = {};
+    try { data = await res.json(); } catch {}
+    if (!res.ok) throw new Error(data.error || '주문 접수에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+
+    // 주문 조회용으로 최근 주문번호·연락처 기억
+    try {
+      localStorage.setItem('atelier_last_order', JSON.stringify({ id: data.order.id, phone: val('co-phone') }));
+    } catch {}
+
     STATE.cart = [];
     saveState();
     renderCart();
     closeCheckoutModal();
+    document.getElementById('checkout-form')?.reset();
 
+    const details = document.getElementById('success-details');
+    if (details) {
+      details.innerHTML = `
+        <div><span class="text-stone-400">주문번호</span> <b class="text-stone-900 select-all">${escapeHtml(data.order.id)}</b></div>
+        ${bankInfoHtml(data.bank, data.order.total)}
+        <div class="text-stone-500">주문번호와 연락처로 <b>주문 조회</b>에서 입금·배송 상태를 확인할 수 있습니다.</div>`;
+    }
     const successModal = document.getElementById('success-modal');
     if (successModal) {
       successModal.classList.remove('hidden');
       successModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
       lucide.createIcons();
     }
-
+  } catch (err) {
+    showToast(err.message || '주문 접수에 실패했습니다.', 'info');
+  } finally {
     if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = '결제하기';
+      submitBtn.disabled = !bankReady(BANK_INFO);
+      submitBtn.textContent = '주문하기';
     }
-  }, 1000);
+  }
+}
+
+function openOrderLookup() {
+  const modal = document.getElementById('lookup-modal');
+  if (!modal) return;
+  try {
+    const last = JSON.parse(localStorage.getItem('atelier_last_order') || 'null');
+    if (last) {
+      const idEl = document.getElementById('lk-id');
+      const phoneEl = document.getElementById('lk-phone');
+      if (idEl && !idEl.value) idEl.value = last.id;
+      if (phoneEl && !phoneEl.value) phoneEl.value = last.phone;
+    }
+  } catch {}
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+  lucide.createIcons();
+}
+
+function closeOrderLookup() {
+  const modal = document.getElementById('lookup-modal');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  document.body.style.overflow = '';
+}
+
+async function lookupOrder(event) {
+  event.preventDefault();
+  const result = document.getElementById('lookup-result');
+  const id = document.getElementById('lk-id').value.trim().toUpperCase();
+  const phone = document.getElementById('lk-phone').value.trim();
+  result.innerHTML = '<p class="text-xs text-stone-500">조회 중...</p>';
+
+  try {
+    const res = await fetch(`/api/order-lookup?id=${encodeURIComponent(id)}&phone=${encodeURIComponent(phone)}`, { cache: 'no-store' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || '주문을 찾을 수 없습니다.');
+
+    const o = data.order;
+    const steps = ['pending', 'paid', 'shipping', 'delivered'];
+    const current = steps.indexOf(o.status);
+    result.innerHTML = `
+      <div class="text-xs space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-stone-500">주문번호 <b class="text-stone-900">${escapeHtml(o.id)}</b></span>
+          <span class="px-2.5 py-1 rounded-full font-semibold ${o.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-stone-900 text-white'}">${ORDER_STATUS_LABELS[o.status] || ''}</span>
+        </div>
+        ${o.status !== 'cancelled' ? `
+        <div class="grid grid-cols-4 gap-1 text-center">
+          ${steps.map((st, i) => `<div class="py-1.5 rounded ${i <= current ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-400'}">${ORDER_STATUS_LABELS[st]}</div>`).join('')}
+        </div>` : ''}
+        <div class="bg-stone-50 border border-stone-200 rounded-xl p-3 space-y-1">
+          ${o.items.map(i => `<div class="flex justify-between gap-2"><span class="truncate">${escapeHtml(i.name)} (${escapeHtml(i.option)}) × ${i.quantity}</span><span>${formatPrice(i.price * i.quantity)}</span></div>`).join('')}
+          <div class="flex justify-between pt-1 border-t border-stone-200 font-semibold"><span>합계${o.shipping ? ` (배송비 ${formatPrice(o.shipping)} 포함)` : ''}</span><span>${formatPrice(o.total)}</span></div>
+        </div>
+        ${o.trackingNumber ? `<div class="bg-stone-50 border border-stone-200 rounded-xl p-3"><span class="text-stone-400">택배사</span> <b>${escapeHtml(o.courier)}</b><br /><span class="text-stone-400">송장번호</span> <b class="select-all">${escapeHtml(o.trackingNumber)}</b></div>` : ''}
+        ${data.bank && bankReady(data.bank) ? `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1">${bankInfoHtml(data.bank, o.total)}</div>` : ''}
+      </div>`;
+  } catch (err) {
+    result.innerHTML = `<p class="text-xs text-red-700">${escapeHtml(err.message)}</p>`;
+  }
 }
 
 function closeSuccessModal() {
