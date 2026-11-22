@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>ATELIER NOOK | 감각적인 라이프스타일 셀렉트숍</title>
   <meta name="description" content="일상을 채우는 조용하고 단단한 오브제. 아틀리에 눅(ATELIER NOOK)에서 엄선된 세라믹, 캔들, 조명, 린넨 패브릭을 만나보세요." />
 
@@ -26,6 +26,16 @@
 
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/styles.css" />
+  <!-- 손가락 확대/축소 막기 (iOS Safari는 viewport 설정을 무시하므로 스크립트로도 차단) -->
+  <style>html, body { touch-action: pan-x pan-y; /* 핀치·두 번 탭 확대 차단 */ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }</style>
+  <script>
+    (function () {
+      var block = function (e) { e.preventDefault(); };
+      document.addEventListener('gesturestart', block, { passive: false });
+      document.addEventListener('gesturechange', block, { passive: false });
+      document.addEventListener('touchmove', function (e) { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    })();
+  </script>
 </head>
 <body class="selection:bg-stone-800 selection:text-white">
 
